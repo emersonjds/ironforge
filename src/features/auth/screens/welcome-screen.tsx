@@ -52,9 +52,14 @@ export function WelcomeScreen() {
 
             <View className="h-px w-16 bg-ember-500/40" />
 
-            <Text className="text-sm text-text-tertiary text-center tracking-widest uppercase max-w-[240px]">
-              semana a semana · série a série
-            </Text>
+            <VStack space={1} align="center">
+              <Text className="text-sm text-text-tertiary text-center tracking-widest uppercase">
+                semana a semana
+              </Text>
+              <Text className="text-sm text-text-tertiary text-center tracking-widest uppercase">
+                série a série
+              </Text>
+            </VStack>
           </VStack>
         </AnimatedView>
 
