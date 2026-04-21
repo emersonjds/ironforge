@@ -68,11 +68,9 @@ export default function TodayScreen() {
 
   return (
     <Screen edges={["top"]} padded={false}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerClassName="px-5 pt-8 pb-10"
-      >
-        <VStack space={10}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View className="px-5 pt-10 pb-24">
+        <VStack space={8}>
           {/* Greeting */}
           <VStack space={2}>
             <Text variant="title">{greeting}, {firstName}</Text>
@@ -101,7 +99,7 @@ export default function TodayScreen() {
               </VStack>
 
               {/* Stats row */}
-              <View className="flex-row border-t border-border-subtle pt-5 pb-1">
+              <View className="flex-row border-t border-border-subtle py-4">
                 <VStack space={2} className="flex-1 items-center">
                   <Text variant="label">EXERCÍCIOS</Text>
                   <Text className="text-2xl font-bold font-mono text-text-primary">
@@ -152,7 +150,7 @@ export default function TodayScreen() {
                 return (
                   <View
                     key={abbrev}
-                    className={`flex-1 h-20 rounded-lg items-center justify-center gap-2 ${
+                    className={`flex-1 h-14 rounded-lg items-center justify-center gap-1.5 ${
                       isToday
                         ? "bg-ember-500/15 border border-ember-500"
                         : hasWorkout
@@ -196,6 +194,7 @@ export default function TodayScreen() {
             </VStack>
           </Card>
         </VStack>
+        </View>
       </ScrollView>
     </Screen>
   );
