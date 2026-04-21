@@ -10,6 +10,8 @@ export default function WorkoutLayout() {
       }}
     >
       <Stack.Screen name="preview" />
+      <Stack.Screen name="logger" />
+      <Stack.Screen name="summary" />
     </Stack>
   );
 }
