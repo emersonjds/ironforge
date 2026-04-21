@@ -40,7 +40,7 @@ const variantStyles: Record<Variant, { bg: string; text: string; border: string 
 };
 
 const sizeStyles: Record<Size, { container: string; label: string }> = {
-  sm: { container: "h-10 px-4 rounded-md", label: "text-sm font-semibold" },
+  sm: { container: "h-11 px-4 rounded-md", label: "text-sm font-semibold" },
   md: { container: "h-12 px-5 rounded-lg", label: "text-base font-semibold" },
   lg: { container: "h-14 px-6 rounded-lg", label: "text-base font-bold uppercase tracking-wide" },
   xl: { container: "h-16 px-8 rounded-xl", label: "text-lg font-bold uppercase tracking-wide" },

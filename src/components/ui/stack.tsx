@@ -3,7 +3,7 @@ import { cssInterop } from "nativewind";
 
 cssInterop(View, { className: "style" });
 
-type Spacing = 0 | 1 | 2 | 3 | 4 | 6 | 8 | 12 | 16;
+type Spacing = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 10 | 12 | 16;
 type Align = "start" | "center" | "end" | "stretch";
 type Justify = "start" | "center" | "end" | "between" | "around";
 

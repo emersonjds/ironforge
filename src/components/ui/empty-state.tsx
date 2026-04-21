@@ -22,18 +22,26 @@ export function EmptyState({
   icon,
 }: EmptyStateProps) {
   return (
-    <VStack space={4} align="center" justify="center" className="py-12 px-6">
-      {icon ? <View className="mb-2 opacity-60">{icon}</View> : null}
-      <Text variant="heading" className="text-center">
+    <VStack space={3} align="center" justify="center" className="py-16 px-8">
+      {icon ? (
+        <View className="mb-4 opacity-50">{icon}</View>
+      ) : (
+        <View className="mb-4 opacity-30">
+          <Text className="text-5xl">⬡</Text>
+        </View>
+      )}
+      <Text variant="title" className="text-center text-2xl">
         {title}
       </Text>
       {description ? (
-        <Text variant="bodySmall" className="text-center max-w-xs">
+        <Text variant="bodySmall" className="text-center max-w-xs leading-relaxed text-text-tertiary">
           {description}
         </Text>
       ) : null}
       {actionLabel && onAction ? (
-        <Button label={actionLabel} onPress={onAction} variant="solid" size="lg" />
+        <View className="mt-2">
+          <Button label={actionLabel} onPress={onAction} variant="solid" size="lg" />
+        </View>
       ) : null}
     </VStack>
   );

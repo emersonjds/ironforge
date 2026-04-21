@@ -6,19 +6,19 @@ cssInterop(View, { className: "style" });
 type Variant = "default" | "raised" | "sunken" | "accent";
 
 const variantClasses: Record<Variant, string> = {
-  default: "bg-bg-raised border border-border-subtle",
+  default: "bg-bg-raised border border-border",
   raised: "bg-bg-raised border border-border",
   sunken: "bg-bg-sunken border border-border-subtle",
-  accent: "bg-bg-raised border border-ember-500/30",
+  accent: "bg-bg-raised border border-ember-500/40",
 };
 
 export interface CardProps extends ViewProps {
   variant?: Variant;
-  padding?: "sm" | "md" | "lg";
+  padding?: "none" | "sm" | "md" | "lg" | "xl";
   className?: string;
 }
 
-const padMap = { sm: "p-3", md: "p-4", lg: "p-6" };
+const padMap = { none: "p-0", sm: "p-4", md: "p-5", lg: "p-6", xl: "p-7" };
 
 export function Card({
   variant = "default",
