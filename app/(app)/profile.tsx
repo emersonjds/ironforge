@@ -1,10 +1,11 @@
-import { View, Alert } from "react-native";
+import { View, Alert, ScrollView } from "react-native";
 import { cssInterop } from "nativewind";
 import { router } from "expo-router";
 import { Screen, VStack, HStack, Text, Card, Button, Divider } from "@ui/index";
 import { useAuthStore } from "@features/auth/store";
 
 cssInterop(View, { className: "style" });
+cssInterop(ScrollView, { className: "style" });
 
 const GOAL_LABEL: Record<string, string> = {
   hypertrophy: "Hipertrofia",
@@ -45,8 +46,10 @@ export default function ProfileScreen() {
     .toUpperCase();
 
   return (
-    <Screen edges={["top"]}>
-      <VStack space={8} className="flex-1 pt-8 pb-4">
+    <Screen edges={["top"]} padded={false}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View className="px-5 pt-8 pb-12">
+        <VStack space={8}>
         <VStack space={2}>
           <Text className="text-2xs text-text-tertiary uppercase tracking-widest">PERFIL</Text>
           <Text variant="title">Sua conta</Text>
@@ -89,8 +92,6 @@ export default function ProfileScreen() {
           </View>
         </Card>
 
-        <View className="flex-1" />
-
         <Button
           label="Sair da conta"
           variant="outline"
@@ -98,7 +99,9 @@ export default function ProfileScreen() {
           fullWidth
           onPress={confirmSignOut}
         />
-      </VStack>
+        </VStack>
+        </View>
+      </ScrollView>
     </Screen>
   );
 }
