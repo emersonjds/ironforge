@@ -83,6 +83,7 @@ export const PlanExerciseSchema = z.object({
   repRangeMax: z.number().int().min(1),
   restSeconds: z.number().int().min(30),
   targetRir: z.number().int().min(0).max(5),
+  isSupersetWith: z.string().nullable().default(null),
 });
 export type PlanExercise = z.infer<typeof PlanExerciseSchema>;
 
