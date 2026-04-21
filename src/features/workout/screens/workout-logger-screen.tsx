@@ -1,17 +1,17 @@
 import { useMemo, useState } from "react";
-import { Alert, Pressable, View } from "react-native";
+import { Alert, Platform, Pressable, ScrollView, StatusBar, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { cssInterop } from "nativewind";
 import { router } from "expo-router";
-import { Screen, VStack, HStack, Text } from "@ui/index";
+import { VStack, HStack, Text } from "@ui/index";
+import { NumericKeypadSheet, type KeypadValues } from "@features/workout/components/numeric-keypad-sheet";
+import { RestTimerBar } from "@features/workout/components/rest-timer-bar";
 import { useActiveSessionStore } from "@features/workout/store";
 import { getExercise } from "@features/exercises/data/catalog";
 import { suggestNextSet } from "@features/workout/lib/progression";
 import { bestE1RM } from "@features/workout/lib/e1rm";
 import { detectPRs } from "@features/workout/lib/pr-detection";
 import { SetRow } from "@features/workout/components/set-row";
-import { NumericKeypadSheet, type KeypadValues } from "@features/workout/components/numeric-keypad-sheet";
-import { RestTimerBar } from "@features/workout/components/rest-timer-bar";
-import { ForceUnlockX } from "@features/workout/components/force-unlock-x";
 import { useRestTimer } from "@features/workout/hooks/use-rest-timer";
 import { useSessionTimer } from "@features/workout/hooks/use-session-timer";
 import { persistLastFinishedSession } from "@features/workout/hooks/use-last-finished-session";
@@ -21,6 +21,7 @@ import type { PlanExercise } from "@/types/domain";
 
 cssInterop(Pressable, { className: "style" });
 cssInterop(View, { className: "style" });
+cssInterop(ScrollView, { className: "style" });
 
 export function WorkoutLoggerScreen() {
   const session = useActiveSessionStore((s) => s.session);
@@ -154,111 +155,140 @@ export function WorkoutLoggerScreen() {
     .join(", ") || "—";
 
   const sessionBestE1RM = bestE1RM(doneSets.map((s) => ({ weight: s.weight, reps: s.reps })));
+  const insets = useSafeAreaInsets();
+
+  // iOS: insets.top já inclui status bar + notch/Dynamic Island
+  // Android: StatusBar.currentHeight cobre a barra de status
+  const topPad = Platform.OS === "android" ? (StatusBar.currentHeight ?? 24) : insets.top;
+  const bottomPad = Math.max(insets.bottom, 20);
 
   return (
-    <Screen padded={false}>
-      {/* Header sticky */}
-      <View className="px-5 pt-4 pb-5 border-b border-border-subtle">
-        <HStack justify="between" align="center" className="mb-4">
-          <ForceUnlockX onUnlock={confirmCancel} />
-          <VStack align="center" space={1}>
-            <Text variant="label" className="text-text-secondary">{planDay.name}</Text>
-            <Text className="font-mono text-text-primary text-base font-semibold">{formatDuration(elapsed)}</Text>
-          </VStack>
-          <View className="w-11" />
+    <View className="flex-1 bg-bg" style={{ paddingTop: topPad }}>
+
+      {/* ── Navbar ─────────────────────────────────── */}
+      <View className="px-4 pb-3 border-b border-border-subtle">
+        <HStack justify="between" align="center" className="h-14">
+          {/* Botão X — área de toque 44×44, claramente fora do status bar */}
+          <Pressable
+            onPress={confirmCancel}
+            hitSlop={12}
+            accessibilityLabel="Encerrar treino"
+            accessibilityRole="button"
+            className="w-10 h-10 rounded-full border border-border bg-bg-raised items-center justify-center active:opacity-60"
+          >
+            <Text className="text-text-primary text-sm font-bold">✕</Text>
+          </Pressable>
+
+          <Text className="font-mono text-text-primary text-xl font-bold tabular-nums">
+            {formatDuration(elapsed)}
+          </Text>
+
+          <View className="w-10" />
         </HStack>
 
-        <View className="h-1.5 rounded-full bg-bg-sunken overflow-hidden">
+        {/* Barra de progresso */}
+        <View className="h-1 rounded-full bg-bg-sunken overflow-hidden">
           <View
             className="h-full bg-ember-500 rounded-full"
             style={{ width: `${((currentIdx + 1) / totalExercises) * 100}%` }}
           />
         </View>
-        <Text className="text-2xs text-text-tertiary tracking-widest uppercase mt-3">
-          exercício {currentIdx + 1} de {totalExercises}
-        </Text>
+        <HStack justify="between" align="center" className="mt-2">
+          <Text className="text-2xs text-text-tertiary tracking-widest uppercase">
+            exercício {currentIdx + 1} de {totalExercises}
+          </Text>
+          <Text className="text-2xs text-text-tertiary tracking-widest uppercase">
+            {planDay.name}
+          </Text>
+        </HStack>
       </View>
 
-      <VStack space={6} className="flex-1 px-5 pt-6">
-        {supersetPartner && supersetPartnerExercise ? (
-          <View className="self-start px-3 py-2 rounded-pill bg-ember-500/15 border border-ember-500/40">
-            <Text className="text-2xs font-semibold tracking-widest text-ember-400 uppercase">
-              SUPERSET · com {supersetPartnerExercise.name}
-            </Text>
-          </View>
-        ) : null}
-
-        <VStack space={2}>
-          <Text variant="title" className="text-text-primary">{exercise.name}</Text>
-          <HStack space={2} align="center">
-            <Text className="text-xs text-text-tertiary uppercase tracking-widest">
-              {prettyEquipment(exercise.equipment)}
-            </Text>
-            {sessionBestE1RM > 0 ? (
-              <>
-                <View className="w-px h-3 bg-border" />
-                <Text className="text-xs text-text-tertiary">
-                  e1RM {sessionBestE1RM.toFixed(1)}kg
-                </Text>
-              </>
-            ) : null}
-          </HStack>
-        </VStack>
-
-        {/* Histórico da sessão — compacto, não é o foco */}
-        {previousHistorySummary !== "—" ? (
-          <View className="flex-row items-center gap-3 px-4 py-3 rounded-lg bg-bg-sunken border border-border-subtle">
-            <Text className="text-2xs text-text-tertiary uppercase tracking-widest">Sessão:</Text>
-            <Text className="text-xs font-mono text-text-secondary flex-1">{previousHistorySummary}</Text>
-          </View>
-        ) : null}
-
-        {/* Tabela de sets */}
-        <VStack space={3}>
-          <HStack className="px-3 pb-2">
-            <Text variant="label" className="w-8">#</Text>
-            <Text variant="label" className="w-24">anterior</Text>
-            <View className="flex-1 flex-row justify-center gap-3">
-              <Text variant="label" className="w-16 text-center">kg</Text>
-              <Text variant="label" className="w-12 text-center">reps</Text>
-              <Text variant="label" className="w-10 text-center">rir</Text>
+      {/* ── Conteúdo scrollável ─────────────────────── */}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 24 }}
+      >
+        <VStack space={6}>
+          {supersetPartner && supersetPartnerExercise ? (
+            <View className="self-start px-3 py-2 rounded-full bg-ember-500/15 border border-ember-500/40">
+              <Text className="text-2xs font-semibold tracking-widest text-ember-400 uppercase">
+                SUPERSET · com {supersetPartnerExercise.name}
+              </Text>
             </View>
-            <View className="w-6" />
-          </HStack>
+          ) : null}
 
-          {Array.from({ length: totalSets }).map((_, i) => {
-            const setNumber = i + 1;
-            const done = doneSets[i];
-            const status = done
-              ? "done"
-              : setNumber === doneSets.length + 1
-                ? "active"
-                : "pending";
-            return (
-              <SetRow
-                key={setNumber}
-                index={setNumber}
-                status={status}
-                previous={done ? { weight: done.weight, reps: done.reps } : null}
-                weight={done?.weight}
-                reps={done?.reps}
-                rir={done?.rir}
-                targetReps={`${planExercise.repRangeMin}-${planExercise.repRangeMax}`}
-                onPress={handleOpenKeypad}
-              />
-            );
-          })}
+          <VStack space={2}>
+            <Text variant="title" className="text-text-primary">{exercise.name}</Text>
+            <HStack space={2} align="center">
+              <Text className="text-xs text-text-tertiary uppercase tracking-widest">
+                {prettyEquipment(exercise.equipment)}
+              </Text>
+              {sessionBestE1RM > 0 ? (
+                <>
+                  <View className="w-px h-3 bg-border" />
+                  <Text className="text-xs text-text-tertiary">
+                    e1RM {sessionBestE1RM.toFixed(1)}kg
+                  </Text>
+                </>
+              ) : null}
+            </HStack>
+          </VStack>
+
+          {previousHistorySummary !== "—" ? (
+            <View className="flex-row items-center gap-3 px-4 py-3 rounded-lg bg-bg-sunken border border-border-subtle">
+              <Text className="text-2xs text-text-tertiary uppercase tracking-widest">Sessão:</Text>
+              <Text className="text-xs font-mono text-text-secondary flex-1">{previousHistorySummary}</Text>
+            </View>
+          ) : null}
+
+          <VStack space={3}>
+            <HStack className="px-3 pb-2">
+              <Text variant="label" className="w-8">#</Text>
+              <Text variant="label" className="w-24">anterior</Text>
+              <View className="flex-1 flex-row justify-center gap-3">
+                <Text variant="label" className="w-16 text-center">kg</Text>
+                <Text variant="label" className="w-12 text-center">reps</Text>
+                <Text variant="label" className="w-10 text-center">rir</Text>
+              </View>
+              <View className="w-6" />
+            </HStack>
+
+            {Array.from({ length: totalSets }).map((_, i) => {
+              const setNumber = i + 1;
+              const done = doneSets[i];
+              const status = done
+                ? "done"
+                : setNumber === doneSets.length + 1
+                  ? "active"
+                  : "pending";
+              return (
+                <SetRow
+                  key={setNumber}
+                  index={setNumber}
+                  status={status}
+                  previous={done ? { weight: done.weight, reps: done.reps } : null}
+                  weight={done?.weight}
+                  reps={done?.reps}
+                  rir={done?.rir}
+                  targetReps={`${planExercise.repRangeMin}-${planExercise.repRangeMax}`}
+                  onPress={handleOpenKeypad}
+                />
+              );
+            })}
+          </VStack>
+
+          {lastPRMessage ? (
+            <View className="self-start px-3 py-2 rounded-full bg-success/15 border border-success/40">
+              <Text className="text-success font-bold uppercase tracking-widest text-2xs">
+                {lastPRMessage}
+              </Text>
+            </View>
+          ) : null}
         </VStack>
+      </ScrollView>
 
-        {lastPRMessage ? (
-          <View className="self-start px-3 py-2 rounded-pill bg-success/15 border border-success/40">
-            <Text className="text-success font-bold uppercase tracking-widest text-2xs">
-              {lastPRMessage}
-            </Text>
-          </View>
-        ) : null}
-      </VStack>
-
+      {/* ── Rest timer ──────────────────────────────── */}
       {timer.active ? (
         <RestTimerBar
           remainingSeconds={timer.remainingSeconds}
@@ -268,8 +298,11 @@ export function WorkoutLoggerScreen() {
         />
       ) : null}
 
-      {/* CTA bottom */}
-      <View className="px-5 pt-4 pb-safe-bottom border-t border-border-subtle bg-bg">
+      {/* ── CTA bottom — home indicator iOS / nav bar Android ── */}
+      <View
+        className="px-5 pt-4 border-t border-border-subtle bg-bg"
+        style={{ paddingBottom: bottomPad }}
+      >
         {isLastSet ? (
           <VStack space={3}>
             <Text className="text-xs text-text-tertiary text-center uppercase tracking-widest">
@@ -279,31 +312,26 @@ export function WorkoutLoggerScreen() {
               <Pressable
                 onPress={() => prevExercise()}
                 disabled={currentIdx === 0}
-                className={`flex-1 h-14 rounded-xl border border-border items-center justify-center ${currentIdx === 0 ? "opacity-30" : "active:bg-bg-raised"}`}
+                accessibilityLabel="Exercício anterior"
+                className={`flex-1 h-14 rounded-xl border border-border items-center justify-center ${currentIdx === 0 ? "opacity-30" : "active:opacity-60"}`}
               >
                 <Text className="text-text-secondary font-semibold text-sm">◄ voltar</Text>
               </Pressable>
               {isLastExercise ? (
                 <Pressable
                   onPress={handleEndSession}
-                  className="flex-[2] h-14 rounded-xl bg-ember-500 items-center justify-center active:bg-ember-600"
+                  accessibilityLabel="Finalizar treino"
+                  className="flex-[2] h-14 rounded-xl bg-ember-500 items-center justify-center active:opacity-80"
                 >
-                  <Text className="text-text-inverse font-bold uppercase tracking-wider text-base">
-                    ✓ finalizar
-                  </Text>
+                  <Text className="text-white font-bold uppercase tracking-wider text-base">✓ finalizar</Text>
                 </Pressable>
               ) : (
                 <Pressable
-                  onPress={() => {
-                    nextExercise();
-                    timer.stop();
-                    setLastPRMessage(null);
-                  }}
-                  className="flex-[2] h-14 rounded-xl bg-ember-500 items-center justify-center active:bg-ember-600"
+                  onPress={() => { nextExercise(); timer.stop(); setLastPRMessage(null); }}
+                  accessibilityLabel="Próximo exercício"
+                  className="flex-[2] h-14 rounded-xl bg-ember-500 items-center justify-center active:opacity-80"
                 >
-                  <Text className="text-text-inverse font-bold uppercase tracking-wider text-base">
-                    próximo ►
-                  </Text>
+                  <Text className="text-white font-bold uppercase tracking-wider text-base">próximo ►</Text>
                 </Pressable>
               )}
             </HStack>
@@ -311,9 +339,10 @@ export function WorkoutLoggerScreen() {
         ) : (
           <Pressable
             onPress={handleOpenKeypad}
-            className="h-16 rounded-xl bg-ember-500 items-center justify-center flex-row gap-3 active:bg-ember-600"
+            accessibilityLabel={`Registrar série ${activeSetIndex}`}
+            className="h-16 rounded-xl bg-ember-500 items-center justify-center flex-row gap-3 active:opacity-80"
           >
-            <Text className="text-text-inverse font-bold uppercase tracking-wider text-base">
+            <Text className="text-white font-bold uppercase tracking-wider text-base">
               ✓ REGISTRAR SÉRIE {activeSetIndex}
             </Text>
             {suggestion ? (
@@ -334,16 +363,13 @@ export function WorkoutLoggerScreen() {
         }}
         previous={
           doneSets.length
-            ? (() => {
-                const last = doneSets[doneSets.length - 1]!;
-                return { kg: last.weight, reps: last.reps, rir: last.rir };
-              })()
+            ? (() => { const last = doneSets[doneSets.length - 1]!; return { kg: last.weight, reps: last.reps, rir: last.rir }; })()
             : null
         }
         onClose={() => setKeypadVisible(false)}
         onConfirm={handleConfirmSet}
       />
-    </Screen>
+    </View>
   );
 }
 
