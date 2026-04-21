@@ -1,4 +1,5 @@
-import { ScrollView, View } from "react-native";
+import { useState } from "react";
+import { ScrollView, View, Pressable } from "react-native";
 import { cssInterop } from "nativewind";
 import { Screen, VStack, HStack, Text, Button, Card } from "@ui/index";
 import { useAuthStore } from "@features/auth/store";
@@ -6,10 +7,13 @@ import { router } from "expo-router";
 import { getTodayPlanDay, SEED_MESOCYCLE } from "@features/plans/data/seed-plan";
 import { getExercise } from "@features/exercises/data/catalog";
 import { useActiveSessionStore } from "@features/workout/store";
-import type { Muscle } from "@/types/domain";
+import { useSessionHistory } from "@features/workout/hooks/use-session-history";
+import { DaySessionSheet } from "@features/workout/components/day-session-sheet";
+import type { Muscle, Session } from "@/types/domain";
 
 cssInterop(ScrollView, { className: "style" });
 cssInterop(View, { className: "style" });
+cssInterop(Pressable, { className: "style" });
 
 const MUSCLE_LABEL: Partial<Record<Muscle, string>> = {
   chest: "peito",
@@ -38,6 +42,19 @@ function getGreeting(): string {
 export default function TodayScreen() {
   const user = useAuthStore((s) => s.user);
   const hasActiveSession = useActiveSessionStore((s) => s.session !== null);
+  const sessionHistory = useSessionHistory();
+
+  const [sheetSession, setSheetSession] = useState<Session | null>(null);
+  const [sheetDateLabel, setSheetDateLabel] = useState("");
+  const [sheetVisible, setSheetVisible] = useState(false);
+
+  function openDaySheet(date: Date, session: Session | null) {
+    setSheetSession(session);
+    setSheetDateLabel(
+      date.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }),
+    );
+    setSheetVisible(true);
+  }
 
   const planDay = getTodayPlanDay();
 
@@ -147,38 +164,80 @@ export default function TodayScreen() {
               {DAY_SHORT.map((abbrev, idx) => {
                 const isToday = idx === dayIdx;
                 const hasWorkout = idx < SEED_MESOCYCLE.days.length;
+
+                // data numérica do dia desta semana
+                const dayDate = new Date(today);
+                dayDate.setDate(today.getDate() - dayIdx + idx);
+                const dayNumber = dayDate.getDate();
+                const dateKey = dayDate.toISOString().slice(0, 10);
+                const sessionForDay = sessionHistory[dateKey] ?? null;
+                const isDone = sessionForDay !== null;
+
+                const bgColor = isToday
+                  ? "#FF5A1F26"
+                  : hasWorkout
+                    ? "#111114"
+                    : "#050506";
+                const borderColor = isToday
+                  ? "#FF5A1F"
+                  : isDone
+                    ? "#FF5A1F60"
+                    : hasWorkout
+                      ? "#27272A"
+                      : "#1F1F23";
+                const labelColor = isToday
+                  ? "#FF7A3C"
+                  : hasWorkout
+                    ? "#71717A"
+                    : "#52525B";
+                const dateColor = isToday
+                  ? "#FAFAFA"
+                  : isDone
+                    ? "#FAFAFA"
+                    : hasWorkout
+                      ? "#A1A1AA"
+                      : "#3F3F46";
+
                 return (
-                  <View
+                  <Pressable
                     key={abbrev}
-                    className={`flex-1 h-14 rounded-lg items-center justify-center gap-1.5 ${
-                      isToday
-                        ? "bg-ember-500/15 border border-ember-500"
-                        : hasWorkout
-                          ? "bg-bg-raised border border-border"
-                          : "bg-bg-sunken border border-border-subtle"
-                    }`}
+                    onPress={() => openDaySheet(dayDate, sessionForDay)}
+                    accessibilityLabel={`Ver treino de ${abbrev} ${dayNumber}`}
+                    className="flex-1 rounded-lg items-center justify-center active:opacity-70"
+                    style={{
+                      paddingVertical: 10,
+                      gap: 3,
+                      backgroundColor: bgColor,
+                      borderWidth: 1,
+                      borderColor,
+                    }}
                   >
                     <Text
-                      className={`text-2xs font-bold tracking-widest ${
-                        isToday
-                          ? "text-ember-400"
-                          : hasWorkout
-                            ? "text-text-tertiary"
-                            : "text-text-disabled"
-                      }`}
+                      className="font-bold tracking-widest"
+                      style={{ color: labelColor, fontSize: 9 }}
                     >
                       {abbrev}
                     </Text>
+                    <Text
+                      className="font-semibold tabular-nums"
+                      style={{ color: dateColor, fontSize: 13 }}
+                    >
+                      {dayNumber}
+                    </Text>
+                    {/* bolinha: laranja se fez o treino */}
                     <View
-                      className={`w-2 h-2 rounded-full ${
-                        isToday
-                          ? "bg-ember-500"
-                          : hasWorkout
-                            ? "bg-surface-600"
-                            : "bg-transparent"
-                      }`}
+                      className="w-1.5 h-1.5 rounded-full"
+                      style={{
+                        backgroundColor: isDone
+                          ? "#FF5A1F"
+                          : isToday
+                            ? "#FF5A1F80"
+                            : hasWorkout
+                              ? "#3F3F46"
+                              : "transparent",
+                      }}
                     />
-                  </View>
+                  </Pressable>
                 );
               })}
             </HStack>
@@ -196,6 +255,13 @@ export default function TodayScreen() {
         </VStack>
         </View>
       </ScrollView>
+
+      <DaySessionSheet
+        visible={sheetVisible}
+        session={sheetSession}
+        dateLabel={sheetDateLabel}
+        onClose={() => setSheetVisible(false)}
+      />
     </Screen>
   );
 }
