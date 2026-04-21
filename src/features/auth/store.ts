@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { createMMKVStorage } from "@lib/storage/mmkv";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { STORAGE_KEYS } from "@lib/storage/keys";
 import type { User } from "@/types/domain";
 
@@ -38,7 +38,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: STORAGE_KEYS.auth,
-      storage: createJSONStorage(() => createMMKVStorage()),
+      storage: createJSONStorage(() => AsyncStorage),
     },
   ),
 );
