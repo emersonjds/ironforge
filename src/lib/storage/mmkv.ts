@@ -1,6 +1,6 @@
-import { MMKV } from "react-native-mmkv";
+import { createMMKV } from "react-native-mmkv";
 
-export const storage = new MMKV({ id: "ironforge" });
+export const storage = createMMKV({ id: "ironforge" });
 
 export function createMMKVStorage() {
   return {
@@ -12,7 +12,7 @@ export function createMMKVStorage() {
       storage.set(name, value);
     },
     removeItem: (name: string) => {
-      storage.delete(name);
+      storage.remove(name);
     },
   };
 }
