@@ -61,14 +61,12 @@ export function WorkoutLoggerScreen() {
 
   if (!session || !planDay || !planExercise || !exercise) {
     return (
-      <Screen>
-        <VStack className="flex-1 items-center justify-center">
-          <Text variant="title">Nenhuma sessão ativa</Text>
-          <Pressable onPress={() => router.replace("/(app)")} className="mt-4">
-            <Text variant="bodySmall" className="text-text-accent">voltar para home</Text>
-          </Pressable>
-        </VStack>
-      </Screen>
+      <View className="flex-1 bg-bg items-center justify-center">
+        <Text variant="title">Nenhuma sessão ativa</Text>
+        <Pressable onPress={() => router.dismiss()} className="mt-4">
+          <Text variant="bodySmall" className="text-text-accent">voltar para home</Text>
+        </Pressable>
+      </View>
     );
   }
 
@@ -143,7 +141,7 @@ export function WorkoutLoggerScreen() {
           style: "destructive",
           onPress: () => {
             cancelSession();
-            router.replace("/(app)");
+            router.dismiss();
           },
         },
       ],
