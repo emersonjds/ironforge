@@ -25,6 +25,7 @@
 - **O quê:** registrar carga × reps × RIR por série, com cronômetro de descanso embutido.
 - **Mecanismo:** carga e reps são as duas alavancas de overload; RIR ancora intensidade real (proximidade da falha = driver primário de hipertrofia em faixas 5-30 reps). Descanso ≥2min em compostos preserva volume efetivo.
 - **Dados:** carga (kg, incremento 0.5), reps (int), RIR (0-4+), tempo de descanso real, flag "warmup/working".
+- **Contrato de entrada KG → REPS → RIR:** a ordem dos campos não é decisão de UX — é decisão metodológica. Carga é a única variável decidida *antes* da série (o lifter olha a anilha e já sabe o valor). Reps é resultado — emerge durante a execução. RIR é auto-avaliação que existe apenas na janela imediata após a última repetição; quanto mais o lifter demora para registrar, maior a contaminação por memória. Inverter essa ordem — por exemplo, colocar RIR antes de reps — destrói a validade do dado. Qualquer refatoração de UX que altere essa sequência deve ser tratada como breaking change na metodologia do app, não como melhoria de fluxo.
 
 ### 2.3 Sugestão de Carga/Reps na Próxima Série
 - **O quê:** ao abrir um exercício, mostrar a última performance e sugerir target (double progression).
@@ -50,6 +51,12 @@
 - **O quê:** dispara ao completar série, configurável por exercício.
 - **Mecanismo:** descanso adequado mantém performance entre séries → mais volume efetivo. Automático = zero fricção.
 
+### 2.8 Supersets
+- **O quê:** agrupar 2 exercícios como superset no Plan (configuração prévia) e ad-hoc durante a sessão (agrupa exercícios já no log ativo).
+- **Mecanismo:** superset de antagonistas (bíceps+tríceps, chest+back) ou mesmo grupo em isolamentos é padrão de eficiência de tempo com estímulo preservado — os dois exercícios compartilham o tempo de descanso passivo do músculo oposto. Para P1 em sessões de 60 min cronometradas, superset é a diferença entre cumprir o volume-alvo ou cortar exercício. Não implementar isso é romper o contrato com a persona antes do primeiro treino.
+- **Dados:** flag `isSupersetWith: planExerciseId | null` no `PlanExercise` (relação 1:1 opcional). Timer de descanso só dispara após completar o segundo exercício do par, não após o primeiro. UX: dois exercícios com borda compartilhada e label "SUPERSET" no logger.
+- **Escopo do MVP:** superset clássico de 2 exercícios. Triset (3 exercícios) é raro e escala depois sem mudança de modelo.
+
 ---
 
 ## 3. Nice-to-have (v2+)
@@ -69,7 +76,7 @@
 - WODs, AMRAPs, EMOMs, Hyrox, "functional".
 - Nutrição/macros (app dedicado faz melhor; integrar via API depois).
 - Gamificação tipo streaks com badges infantis — bodybuilder sério acha cringe.
-- Programas prontos genéricos ("PPL do influencer X") no MVP — comoditiza o app.
+- **Programas prontos genéricos sem mesociclo estruturado** ("PPL do influencer X, faça por tempo indeterminado") — comoditiza o app e atrai persona errada. **Exceção aceita:** 8–12 templates ricos com progressão de RIR semana a semana e mesociclo definido (4-8 sem) são aceitáveis como **demonstração do construtor de mesociclo**, não como produto core. O lifter usa o template como ponto de partida, modifica, e entende a profundidade do app. Templates são onboarding disfarçado de feature, não comoditização. A diferença para o anti-escopo acima é estrutural: template sem progressão planejada = lista de exercícios com nome de influencer; template com RIR progressivo por semana = aula implícita de como o mesociclo do IronForge funciona.
 - Coach marketplace, chat com PT.
 - Tracking de sono/HRV nativo.
 - Treino de mobilidade/yoga.
@@ -102,7 +109,9 @@
 2. **Exercício em Foco (dentro da sessão)** — última performance, sugestão, todas as séries do dia.
 3. **Home / Próximo Treino** — qual sessão hoje, CTA "Iniciar".
 4. **Histórico do Exercício** — gráfico de e1RM + tabela de sessões passadas.
-5. **Construtor/Editor de Mesociclo** — montar split, exercícios, faixas de reps.
+5. **Construtor/Editor de Mesociclo** — montar split, exercícios, faixas de reps, supersets e RIR-alvo por semana.
+
+> **Nota sobre ordenação:** a decisão de manter o Construtor em 5º lugar é deliberada mesmo com a inclusão de templates ricos (Mudança C). Templates são onboarding — reduzem a frequência com que o lifter precisa abrir o Construtor do zero, não aumentam. A tela continua crítica porque é onde o lifter modifica o template e entende o app. Não subiu de posição porque aquisição e retenção continuam dependendo das telas 1–4 na ordem atual.
 
 ---
 
@@ -116,3 +125,6 @@ Comoditiza o app e atrai persona errada (iniciante caçando programa grátis). C
 
 **c) Volume contado por séries efetivas (hard sets), não por tonelagem.**
 Tonelagem (kg×reps×sets) infla com cargas pesadas em baixas reps e subestima estímulo de isolation em altas reps. Hard sets ≥RIR 3 é a métrica que correlaciona com hipertrofia na literatura (Schoenfeld). Contagem secundária com peso 0.5 evita inflação por exercícios compostos.
+
+**d) Superset como relação 1:1 opcional no PlanExercise, não entidade separada.**
+Uma entidade `Superset` própria (com id, lista de exercises, ordem) parece modelagem limpa, mas vira complexidade de navegação: o logger precisaria resolver "estou em qual exercício do superset?", a tela de edição do plano precisaria de um container aninhável, e a contagem de volume precisaria ignorar a entidade e ir direto nos exercícios filhos. A relação 1:1 (`isSupersetWith: planExerciseId | null`) é suficiente para 95% dos casos reais — superset clássico de 2 exercícios. O par é implícito: exercício A aponta para exercício B; o logger renderiza os dois como grupo, dispara o timer após o segundo, e a contagem de volume continua operando sobre os exercícios individualmente. Triset (3 exercícios) é raro em protocolos de hipertrofia sérios e pode ser escalado depois sem quebrar o modelo — o nó B simplesmente apontaria para um nó C. Decisão conservadora que cobre o caso real sem inflação de modelo de dados.

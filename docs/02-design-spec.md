@@ -19,14 +19,12 @@
 ### Onboarding (Stack — modal full screen pós-signup)
 | Tela | Propósito | Tipo |
 |---|---|---|
-| `OnbGoal` | Objetivo principal (hipertrofia / força / cutting). | stack |
-| `OnbExperience` | Iniciante / intermediário / avançado (calibra carga sugerida). | stack |
-| `OnbFrequency` | Dias/semana disponíveis (3–6). | stack |
-| `OnbUnits` | kg/lb + métrica de altura/peso. | stack |
-| `OnbBody` | Peso atual + altura (opcional foto). | stack |
-| `OnbPlanPick` | Templates sugeridos pelo coach (PPL, Upper/Lower, Bro Split). | stack |
-| `OnbPermissions` | Notificações + Health/HealthConnect. | stack |
-| `OnbReady` | "Forja pronta" → CTA "Iniciar primeiro treino". | stack |
+| `OnbBasics` | Objetivo (hipertrofia / força / cutting) + Unidades (kg/lb) + Nível de experiência — 3 perguntas numa tela, seleção por chip, sem scroll. | stack |
+| `OnbFrequency` | Dias/semana disponíveis (3–6) + horário preferido (manhã / tarde / noite) — calibra sugestão de sessão no Today. | stack |
+| `OnbPlanPick` | Templates sugeridos pelo coach com detalhes completos (PPL, Upper/Lower, Bro Split, Full Body, nSuns, 5/3/1, Upper/Lower Força, Push-Pull) — scroll horizontal, tap para preview, "Criar do zero" ao final. | stack |
+| `OnbReady` | "Forja pronta" + animação de forja + CTA `INICIAR PRIMEIRO TREINO`. | stack |
+
+> **Decisão de design — redução de fricção pré-primeira-sessão:** 8 telas era churn antes do primeiro treino. Hevy tem 4 steps, Strong tem 2 (pesquisa §5 S1-R5). Para P1 (lifter intermediário que já sabe o que quer), perguntar cada dado numa tela separada é burocracia, não personalização. A compressão para 4 telas preserva todos os dados necessários para calibração do coach sem sacrificar taxa de conclusão do onboarding. **Dados removidos do onboarding:** peso/altura/foto de progresso → opcionais em `ProfileScreen` após o primeiro treino concluído; permissões de notificações e HealthKit/HealthConnect → solicitadas inline na `TodayScreen` no contexto certo (push ao final da primeira sessão, Health ao primeiro registro de peso), nunca como etapa de onboarding.
 
 ### Main Tabs (Bottom Tabs)
 | Tela | Propósito | Tipo |
@@ -45,7 +43,18 @@
 | `RestTimerOverlay` | Timer persistente (chip flutuante + full sheet). | overlay/sheet |
 | `ExerciseSwapSheet` | Trocar exercício no meio da sessão. | sheet |
 | `ExerciseInfoSheet` | Vídeo/notas/forma do exercício. | sheet |
-| `WorkoutSummary` | Pós-sessão: PRs batidos, volume total, RPE médio, share. | stack |
+| `WorkoutSummary` | Pós-sessão: PRs batidos, volume total, delta por exercício, share. | stack |
+
+**SupersetGroup — padrão visual no WorkoutLogger**
+
+Pares de `PlanExercise` vinculados com `is_superset_with` são renderizados como grupo visual no logger:
+
+- Borda compartilhada contínua (`border border-ember-500/40 rounded-xl`) envolvendo os dois blocos de exercício, com um traço vertical ember (`w-0.5 bg-ember-500`) conectando os dois headers.
+- Label `SUPERSET A/B` aparece acima do par (uppercase, `text-2xs font-semibold tracking-widest text-ember-400`).
+- Header do keypad mostra exercício ativo do par: `SUPERSET · Agora: Curl direto` / `SUPERSET · Agora: Tríceps corda`.
+- Rest timer **não dispara** após completar o último set do primeiro exercício. Dispara apenas após completar o último set do segundo exercício.
+- Indicadores durante a sessão: "SUPERSET 1/2" no topo do logger enquanto ativo no primeiro exercício, "SUPERSET 2/2" durante o segundo — substituem o header de exercício normal.
+- Spec de modelo de dados: `PlanExercise.is_superset_with: UUID | null` (relação 1:1, sempre bidirecional — se A aponta para B, B deve apontar para A; validado no PlanEditor).
 
 ### Plans Flow (Stack dentro de tab Plans)
 | Tela | Propósito | Tipo |
@@ -87,7 +96,7 @@ RootNavigator (Stack)
 │   └── ForgotPasswordSheet
 │
 ├── (onboarding) OnbStack       [autenticado, sem perfil completo]
-│   └── 8 telas sequenciais com progress bar
+│   └── 4 telas sequenciais com progress bar (OnbBasics → OnbFrequency → OnbPlanPick → OnbReady)
 │
 ├── (app) MainTabs              [autenticado + perfil completo]
 │   ├── Today        ─→ TodayStack     (Today, Notifications)
@@ -112,42 +121,55 @@ Quatro tabs é o ideal cognitivo, mas musculação tem **cinco verbos canônicos
 ### 3.1 Onboarding (primeiro uso → primeira sessão)
 
 ```
-┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│   Welcome    │───>│   SignUp     │───>│  Onb: Goal   │───>│ Onb: Exp.    │
-│              │    │              │    │ ●○○○○○○○     │    │ ●●○○○○○○     │
-│ [Forge hero] │    │ Email        │    │ Hipertrofia  │    │ Iniciante    │
-│              │    │ Senha        │    │ Força        │    │ Intermed.    │
-│ [Criar]      │    │              │    │ Cutting      │    │ Avançado     │
-│ [Entrar]     │    │ [Continuar]  │    │ [Continuar]  │    │ [Continuar]  │
-└──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
-                                                                    │
-        ┌──────────────────────────────────────────────────────────┘
-        v
-┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│ Onb: Freq.   │───>│ Onb: Units   │───>│ Onb: Body    │───>│ Onb:PlanPick │
-│ ●●●○○○○○     │    │ ●●●●○○○○     │    │ ●●●●●○○○     │    │ ●●●●●●○○     │
-│ 3 / 4 / 5 /  │    │ kg ● lb ○    │    │ Peso ___ kg  │    │ ┌──────────┐ │
-│ 6 dias?      │    │ cm ● in ○    │    │ Altura __ cm │    │ │PPL  6d   │ │
-│              │    │              │    │ (Foto opc.)  │    │ │Upper/Low │ │
-│ [Continuar]  │    │ [Continuar]  │    │ [Pular/Cont.]│    │ │Bro Split │ │
-└──────────────┘    └──────────────┘    └──────────────┘    │ │Custom +  │ │
-                                                            │ └──────────┘ │
-                                                            │ [Selecionar] │
-                                                            └──────┬───────┘
-        ┌──────────────────────────────────────────────────────────┘
-        v
-┌──────────────┐    ┌──────────────┐    ┌──────────────────────────────┐
-│ Onb: Perms   │───>│ Onb: Ready   │───>│   Today (primeira vez)       │
-│ ●●●●●●●○     │    │ ●●●●●●●●     │    │  ┌─────────────────────────┐ │
-│ Notificações │    │              │    │  │ "Forja acesa, [Nome]"   │ │
-│ HealthKit    │    │ [Forge       │    │  └─────────────────────────┘ │
-│              │    │  animation]  │    │  Treino A · Push             │
-│ Tap p/ ativar│    │              │    │  6 exercícios · ~58min       │
-│              │    │ [INICIAR     │    │  ┌─────────────────────────┐ │
-│ [Continuar]  │    │  TREINO]     │    │  │   ► COMEÇAR TREINO      │ │
-└──────────────┘    └──────────────┘    │  └─────────────────────────┘ │
-                                        └──────────────────────────────┘
+┌──────────────┐    ┌──────────────┐    ┌───────────────────────────────────────┐
+│   Welcome    │───>│   SignUp     │───>│  OnbBasics              ●○○○           │
+│              │    │              │    │ ─────────────────────────────────────  │
+│ [Forge hero] │    │ Email        │    │  OBJETIVO                              │
+│              │    │ Senha        │    │  [Hipertrofia] [Força] [Cutting]       │
+│ [Criar]      │    │              │    │                                        │
+│ [Entrar]     │    │ [Continuar]  │    │  EXPERIÊNCIA                           │
+└──────────────┘    └──────────────┘    │  [Iniciante] [Intermediário] [Avançado]│
+                                        │                                        │
+                                        │  UNIDADES                              │
+                                        │  [kg ●] [lb ○]    [cm ●] [in ○]       │
+                                        │                                        │
+                                        │  [CONTINUAR]                           │
+                                        └───────────────────┬───────────────────┘
+                                                            │
+                                                            v
+┌───────────────────────────────────────┐    ┌─────────────────────────────────────┐
+│  OnbFrequency               ●●○○       │    │  OnbPlanPick              ●●●○       │
+│ ─────────────────────────────────────  │    │ ───────────────────────────────────  │
+│  DIAS POR SEMANA                       │    │  ESCOLHA SEU PONTO DE PARTIDA        │
+│  ○ 3   ○ 4   ● 5   ○ 6                │    │                                      │
+│                                        │    │  ◄ scroll horizontal ►               │
+│  HORÁRIO PREFERIDO                     │    │  ┌──────────┐ ┌──────────┐           │
+│  [Manhã] [Tarde●] [Noite]             │    │  │PPL · 6d  │ │Up/Low 4d │  ...      │
+│                                        │    │  │Avançado  │ │Intermed. │           │
+│  (calibra sugestão de sessão no Today) │    │  │[Preview] │ │[Preview] │           │
+│                                        │    │  └──────────┘ └──────────┘           │
+│  [CONTINUAR]                           │    │                                      │
+└──────────────────────┬─────────────────┘    │  ─── DO ZERO ───                     │
+                       │                      │  [Construir meu plano]               │
+                       └──────────────────────►                                      │
+                                              │  [USAR ESTE PLANO]                   │
+                                              └───────────────────┬─────────────────┘
+                                                                  │
+                                                                  v
+                    ┌─────────────────────────┐    ┌──────────────────────────────┐
+                    │  OnbReady       ●●●●     │───>│   Today (primeira vez)       │
+                    │ ───────────────────────  │    │  ┌─────────────────────────┐ │
+                    │                         │    │  │ "Forja acesa, [Nome]"   │ │
+                    │  [animação forja acende] │    │  └─────────────────────────┘ │
+                    │                         │    │  Treino A · Push             │
+                    │  [INICIAR PRIMEIRO       │    │  6 exercícios · ~58min       │
+                    │   TREINO]               │    │  ┌─────────────────────────┐ │
+                    └─────────────────────────┘    │  │   ► COMEÇAR TREINO      │ │
+                                                   │  └─────────────────────────┘ │
+                                                   └──────────────────────────────┘
 ```
+
+> Chips de seleção nos três grupos do `OnbBasics` usam `Pressable` com `border-ember-500` ao selecionar — nenhum campo de texto, zero teclado, 3 toques e avança. Peso/altura/foto de progresso entram em `ProfileScreen` após o primeiro treino. Permissões (notificações, HealthKit) são pedidas inline na `TodayScreen` no momento de maior motivação — ao final da primeira sessão concluída, não antes.
 
 ### 3.2 Sessão de treino ativa (logger)
 
@@ -413,6 +435,19 @@ export const motion = {
 │  │   trocar para outro dia ↻         │  │
 │  └───────────────────────────────────┘  │
 │                                         │
+│  VOLUME DA SEMANA                       │
+│  ┌───────────────────────────────────┐  │
+│  │        ┌─┐   ┌─┐                 │  │
+│  │       ┌┤ ├───┤ ├┐                │  │
+│  │       │ PEITO  COSTA│            │  │
+│  │       │12/18  22/22 │            │  │
+│  │       └─────────────┘            │  │
+│  │  (silhueta front view · SVG)     │  │
+│  │  steel-700 → ember-500 por       │  │
+│  │  intensidade vs. MEV-MAV        │  │
+│  │  Tap grupo → MuscleGroupDetail  │  │
+│  └───────────────────────────────────┘  │
+│                                         │
 │  ESTA SEMANA                            │
 │  ┌───┬───┬───┬───┬───┬───┬───┐         │
 │  │ S │ T │ Q │ Q │ S │ S │ D │         │
@@ -432,6 +467,7 @@ export const motion = {
 - Header: `HStack justifyContent="space-between" alignItems="center"`
 - Hero card: `Pressable` (toda área tappable) → `VStack` com `Box bg="bg-raised" rounded="xl" p="6"`
 - CTA: `Button size="xl" variant="solid" action="primary"` (`bg-ember-500`, label `font-display uppercase tracking-wide`)
+- **Volume da Semana** (componente `WeeklyVolumeDiagram`): `Box bg="bg-raised" rounded="xl" p="4"` height 120dp. Implementar como SVG via `react-native-svg`: silhueta humana frontal simplificada (paths anatômicos por grupo muscular — peito, costas, ombros, bíceps, tríceps, quadríceps, posterior, abdômen). Fill de cada grupo: interpolação linear entre `steel-700` (#1E293B) e `ember-500` (#FF5A1F) conforme `hard_sets_semana / mav_sets_grupo` (clampado em 0–1). Números sobrepostos por grupo: `text-2xs font-semibold` (`sets_feitos/mav`). Tap em qualquer grupo: `Pressable` wrapper com `onPress → navigate('MuscleGroupDetail', { group })`. Sem teclado, sem sheet — navegação direta.
 - Week strip: `HStack space="2"` de `Pressable`s 40dp×40dp
 - PR card: `Box bg="bg-raised" rounded="lg" p="4"` com `HStack`
 
@@ -458,6 +494,8 @@ export const motion = {
 | Tap no hero | `scale 1→0.98→1` | 160ms | iron | selection |
 | Week strip dot ativo | `scale 1→1.1` pulse loop | 1800ms | iron | — |
 | Streak flame | `rotate ±2°` loop sutil | 2400ms | linear | — |
+| WeeklyVolumeDiagram mount | SVG `strokeDashoffset` desenha contorno da silhueta → fill de cada grupo muscular em stagger 80ms por grupo (peito → costas → ombros → braços → pernas → abdômen) | contorno 400ms iron, fill total ~560ms stagger | iron | — |
+| Tap em grupo muscular | `scale 1→0.96→1` no path SVG do grupo | 160ms | iron | selection |
 
 ---
 
@@ -497,13 +535,21 @@ export const motion = {
 
 Bottom-sheet teclado numérico custom:
 ┌─────────────────────────────────────────┐
-│           KG     ●REPS    RPE           │
+│  ┌──── KG ────┬──── REPS ───┬── RIR ──┐ │  ← segmented control, foco auto-avança
+│  └────────────┴─────────────┴─────────┘ │    após confirmar; swipe lateral alterna
 ├─────────────────────────────────────────┤
-│   7    8    9         [Igual anterior]  │
-│   4    5    6         [+2.5]  [+5]      │
-│   1    2    3         [-2.5]  [-5]      │
+│  ┌─────────────────────────────────────┐ │
+│  │         = ANTERIOR  100×8           │ │  ← primário 56dp fullwidth, bg-ember-500/20
+│  │              border-ember-500       │ │    border-ember-500; 1 toque confirma tudo
+│  └─────────────────────────────────────┘ │
+├─────────────────────────────────────────┤
+│   7    8    9         [+2.5]  [+5]      │
+│   4    5    6         [-2.5]  [-5]      │
+│   1    2    3                           │
 │   .    0    ⌫         [✓ CONFIRMAR]    │
 └─────────────────────────────────────────┘
+
+> **Decisão de layout — "= anterior" como botão primário (não terciário):** ~85% dos sets repete o peso da sessão anterior. Colocar o teclado numérico no topo com "= anterior" como fallback escondido inverte a frequência de uso: o caso comum vira exceção, e o caso exceção (alterar o peso) vira o caminho principal. O layout acima corrige isso — "= anterior" ocupa topo fullwidth em destaque ember, teclado numérico fica abaixo para os ~15% de casos onde há mudança. Não é uma feature extra — é a hierarquia de informação correta para um lifter real. Ver também §6.4.
 ```
 
 **Componentes Gluestack**
@@ -514,6 +560,8 @@ Bottom-sheet teclado numérico custom:
 - Inputs: NÃO usar `Input` padrão — `Pressable` que abre `KeypadSheet` custom
 - CTA principal: `HStack space="0"` com `Button` timer + `Button` confirmar (70%)
 - Rest overlay: `Actionsheet` snap points `[160, '50%']`
+- **Keypad — sequência KG → REPS → RIR sem tap extra:** segmented control no topo do `KeypadSheet` mostra os 3 campos na ordem de entrada. Ao tocar em "✓ CONFIRMAR" (ou ao selecionar "= anterior"), o foco avança automaticamente para o próximo campo — nenhum tap de transição. Swipe lateral no keypad sheet alterna entre campos. RIR nunca deve exigir tap extra para aparecer — está sempre presente como terceiro segment, pré-preenchido com o valor da sessão anterior. O lifter nunca faz mais de 3 gestos para confirmar uma série completa (= anterior → confirmar → PR haptic). Se exigir mais, o RIR vai ser pulado.
+- **Supersets na tabela de sets:** dois blocos de exercício com `border-l-2 border-ember-500` compartilhado como traço vertical conectando os dois headers. Header acima do par alterna: `SUPERSET 1/2` durante exercício A, `SUPERSET 2/2` durante exercício B — em `text-2xs font-semibold tracking-widest text-ember-400`. Rest timer: estado `disabled` (cinza, inativo) enquanto no primeiro exercício do par; ativa apenas após confirmar o último set do segundo. O visual do timer no bottom CTA reflete isso: área do timer aparece em `steel-700` com label `APÓS O PAR` durante exercício A.
 
 **Estados**
 | Estado | Comportamento |
@@ -697,7 +745,80 @@ Bottom-sheet teclado numérico custom:
 
 ---
 
-## 6. Três padrões de interação não-óbvios
+### 5.5 Workout Summary
+
+```
+┌─────────────────────────────────────────┐
+│  ✓   Push A                  compartilhar│
+│  58 min · 12 séries · 8.4t               │
+├─────────────────────────────────────────┤
+│  O QUE MUDOU vs. última Push A           │
+│                                          │
+│  Supino reto       +2.5kg ▲              │
+│  Inclinado halt.   mesmo                 │
+│  Crossover         +1 rep ▲              │
+│  Desenv. máq.      -1 rep (fadiga?)      │
+│  Elevação lateral  +1 rep ▲              │
+│  Tríceps corda     +2.5kg ▲              │
+├─────────────────────────────────────────┤
+│  PR: Supino 100×8 (e1RM 128kg)           │
+│                                          │
+│  ┌────────────────────────────────────┐  │
+│  │         CONCLUIR SESSÃO             │  │
+│  └────────────────────────────────────┘  │
+└─────────────────────────────────────────┘
+```
+
+> **Decisão de design — delta específico vs. motivacional genérico:** o Hevy mostra comparações como "você levantou um caminhão" (pesquisa §5 S1-R4). Isso é ruído motivacional. O IronForge mostra delta por exercício vs. a última sessão do mesmo dia do plano — "Supino: +2.5kg, Desenv. máq.: -1 rep (fadiga?)". Isso é **actionable**: o lifter sai sabendo o que ajustar na próxima sessão. Motivacional genérico não retém; progressão visível retém.
+
+**Componentes Gluestack**
+- Root: `ScrollView` → `VStack space="0"` (tela modal, sem scroll na maioria dos casos)
+- Header: `HStack justifyContent="space-between"` com ícone checkmark `ember-500` + nome da sessão `Heading size="lg"` + `Pressable` compartilhar (abre share sheet nativa)
+- Subtítulo: `HStack space="4"` com `Text size="sm" color="text-secondary"` — duração · séries · volume total
+- Seção delta: `VStack space="0"` com divider `border-b border-subtle`. Cada linha: `HStack justifyContent="space-between"` — nome do exercício `Text size="sm"` + delta `Text size="sm"` com cor e ícone por estado (ver tabela abaixo)
+- PR badge: `Box bg="ember-500/10" border border-ember-500/40 rounded-lg p="4"` com texto `font-semibold` + e1RM estimado como `text-secondary`
+- CTA: `Button size="xl" variant="solid" action="primary"` fullwidth, `mb="safe-bottom"`
+
+**Estados do delta por exercício**
+| Estado | Cor | Ícone | Texto |
+|---|---|---|---|
+| Aumento de carga | `success-DEFAULT` | ▲ | `+2.5kg` |
+| Aumento de reps | `success-DEFAULT` | ▲ | `+1 rep` |
+| Sem mudança | `text-tertiary` | — | `mesmo` |
+| Queda de performance | `text-secondary` | ▼ | `-1 rep (fadiga?)` |
+| Primeiro treino deste plano | `ember-400` | ★ | `primeira referência` |
+| Exercício não logado (skip) | `text-disabled` | — | `pulado` |
+
+**Estados da tela**
+| Estado | Comportamento |
+|---|---|
+| **PR na sessão** | `PRCelebrationModal` dispara antes desta tela (560ms), então Summary exibe badge PR inline com e1RM calculado. |
+| **Sem mudança vs. anterior** | Seção delta exibe "Manteve o padrão — consistência é progressão." com cor `text-secondary`. Sem mensagem alarmista. |
+| **Primeira sessão do plano** | Seção delta substituída por "Primeira sessão registrada. Próxima vez vamos comparar aqui." + todos os exercícios com ícone ★ `ember-400`. |
+| **Meta de volume não atingida** | Badge `warning-muted` com "Volume abaixo do alvo (6.2t / 8.4t). Próxima sessão: checar descanso e carga." |
+| **Sessão abandonada (< 50%)** | Header mostra ⚠ em vez de ✓; badge `warning-muted`: "Sessão parcial salva. 3 de 6 exercícios concluídos." |
+
+**Microcopy**
+- Header sessão completa: `✓ [Nome do dia do plano]` (ex.: `✓ Push A`)
+- Header sessão parcial: `⚠ Push A (parcial)`
+- CTA: `CONCLUIR SESSÃO` (uppercase, display)
+- Compartilhar: opens share sheet nativa com texto pré-montado "Concluí Push A · 58 min · 12 séries · PR no supino 100×8 #ironforge" — editável antes de compartilhar
+- Empty delta (sem sessão anterior): "Primeira vez que você faz Push A neste plano. Referência salva."
+- Queda com sufixo contextual: `-1 rep (fadiga?)` — o sufixo "(fadiga?)" aparece apenas se a queda for no último exercício do bloco muscular principal da sessão (heurística: se 60%+ dos exercícios do mesmo grupo tiveram queda, é fadiga acumulada de sessão)
+
+**Motion**
+| Elemento | Propriedade | Duração | Easing | Haptic |
+|---|---|---|---|---|
+| Tela entra | `translateY 100%→0` (push da direita, não modal) | 360ms | anvil | — |
+| Linhas delta entrada | stagger 40ms por linha, `opacity 0→1 + translateX -8→0` | 240ms each | iron | — |
+| PR badge | `scale 0.8→1.05→1 + opacity 0→1` | 480ms | spring | notificationSuccess |
+| ▲ ícone de aumento | `translateY 4→0 + opacity 0→1` com delay após linha | 160ms | iron | — |
+| Tap compartilhar | `scale 1→0.96→1` | 120ms | iron | selection |
+| Tap CONCLUIR | `scale 1→0.98→1` → dismiss modal + retorna tabs | 240ms | anvil | impactMedium |
+
+---
+
+## 6. Padrões de interação não-óbvios
 
 ### 6.1 Teclado numérico custom (não usar o nativo)
 **O que:** ao tocar num campo de kg/reps/RPE no logger, abrimos um `Actionsheet` com keypad próprio (números 56dp, botões `+2.5/+5`, "igual ao set anterior", "confirmar"). Teclado do sistema **nunca** aparece nessa tela.
@@ -731,6 +852,30 @@ Bottom-sheet teclado numérico custom:
 - Ring SVG: `strokeDashoffset` de circumference→0.
 - Haptic: `impactLight` em 50%, `impactMedium` em 100%, então abre sheet.
 - Bypass por edge-swipe: desabilitado durante sessão (`gestureEnabled: false`).
+
+### 6.4 "= anterior" como fallback primário — defendendo o layout anti-intuitivo
+
+**O padrão:** no `KeypadSheet` do logger, o botão "= anterior" ocupa o topo em 56dp × fullwidth com `bg-ember-500/20 border border-ember-500`. O teclado numérico fica abaixo, de acesso secundário.
+
+**Por que documentar isso explicitamente:** este layout vai parecer errado para qualquer designer ou engenheiro que não seja lifter. A intuição de produto padrão diz "teclado numérico é a entrada de dados, atalhos ficam à parte". Essa intuição está errada para este contexto específico. Se essa decisão não for defendida em texto, vai ser "corrigida" numa PR sem discussão.
+
+**O argumento:**
+
+Em aproximadamente 85% dos sets de um lifter de hipertrofia intermediário/avançado, o peso da série é idêntico ao da última sessão. Esse não é um comportamento ocasional — é a norma do treino de hipertrofia (a progressão acontece em ciclos de semanas, não sessão a sessão). Colocar o teclado numérico no topo com "= anterior" escondido em canto inverte a hierarquia de frequência:
+
+- Caso comum (~85%): repetir peso → exige 3+ toques para achar e ativar "= anterior"
+- Caso exceção (~15%): alterar peso → imediato, teclado já na frente
+
+O layout correto inverte isso:
+
+- Caso comum: 1 toque em "= anterior" → confirmar → próximo campo
+- Caso exceção: ignorar "= anterior", usar teclado numérico abaixo
+
+**Fundamento de design:** Fitts's Law + frequência de uso determinam posição primária. O botão mais usado deve estar na posição de menor custo de acesso (topo da sheet, fullwidth = alvo máximo). Esta é a mesma lógica do "Repeat Previous Workout" do Strong (pesquisa §4.1, Padrão 1) — mas implementada com target 56dp em vez de texto inline de 12pt.
+
+**O que NÃO fazer:** transformar "= anterior" num ghost text clicável dentro da coluna da tabela (como Hevy). Target pequeno, contexto de mão suada, inacessível para luvas. O keypad custom resolve isso — não abrir mão do keypad custom pelo teclado do sistema apenas para "simplificar".
+
+**Spec definitiva:** `Pressable` 56dp height, `w-full`, `bg-ember-500/20`, `border border-ember-500`, `rounded-lg`, label `= ANTERIOR · [peso×reps da última sessão]` em `font-semibold text-base text-ember-300`. Ao tap: preenche os três campos do keypad (kg, reps, rir) com os valores da última série correspondente, avança para campo RIR para confirmação ou toque em `✓ CONFIRMAR`.
 
 ---
 
