@@ -7,6 +7,22 @@ type Spacing = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 10 | 12 | 16;
 type Align = "start" | "center" | "end" | "stretch";
 type Justify = "start" | "center" | "end" | "between" | "around";
 
+// Static map required — NativeWind/Tailwind cannot process dynamic class strings like `gap-${n}`
+const gapMap: Record<Spacing, string> = {
+  0: "gap-0",
+  1: "gap-1",
+  2: "gap-2",
+  3: "gap-3",
+  4: "gap-4",
+  5: "gap-5",
+  6: "gap-6",
+  7: "gap-7",
+  8: "gap-8",
+  10: "gap-10",
+  12: "gap-12",
+  16: "gap-16",
+};
+
 const alignMap: Record<Align, string> = {
   start: "items-start",
   center: "items-center",
@@ -39,7 +55,7 @@ export function VStack({
 }: StackProps) {
   return (
     <View
-      className={`flex-col gap-${space} ${alignMap[align]} ${justifyMap[justify]} ${className}`}
+      className={`flex-col ${gapMap[space]} ${alignMap[align]} ${justifyMap[justify]} ${className}`}
       {...rest}
     >
       {children}
@@ -57,7 +73,7 @@ export function HStack({
 }: StackProps) {
   return (
     <View
-      className={`flex-row gap-${space} ${alignMap[align]} ${justifyMap[justify]} ${className}`}
+      className={`flex-row ${gapMap[space]} ${alignMap[align]} ${justifyMap[justify]} ${className}`}
       {...rest}
     >
       {children}
