@@ -1,5 +1,6 @@
 import { View, Alert } from "react-native";
 import { cssInterop } from "nativewind";
+import { router } from "expo-router";
 import { Screen, VStack, HStack, Text, Card, Button, Divider } from "@ui/index";
 import { useAuthStore } from "@features/auth/store";
 
@@ -25,7 +26,14 @@ export default function ProfileScreen() {
   function confirmSignOut() {
     Alert.alert("Sair da conta?", "Você precisará logar novamente.", [
       { text: "Cancelar", style: "cancel" },
-      { text: "Sair", style: "destructive", onPress: signOut },
+      {
+        text: "Sair",
+        style: "destructive",
+        onPress: () => {
+          signOut();
+          router.replace("/(auth)/welcome");
+        },
+      },
     ]);
   }
 
