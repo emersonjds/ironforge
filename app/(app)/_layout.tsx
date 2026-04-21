@@ -1,14 +1,18 @@
-import { Stack } from "expo-router";
+import { Tabs } from "expo-router";
+import { TabBar } from "@shared/tab-bar";
 
 export default function AppLayout() {
   return (
-    <Stack
+    <Tabs
+      tabBar={(props) => <TabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: "#0A0A0B" },
+        sceneStyle: { backgroundColor: "#0A0A0B" },
       }}
     >
-      <Stack.Screen name="index" />
-    </Stack>
+      <Tabs.Screen name="index" />
+      <Tabs.Screen name="history" />
+      <Tabs.Screen name="profile" />
+    </Tabs>
   );
 }
