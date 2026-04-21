@@ -37,7 +37,7 @@ export function SignUpScreen() {
 
   return (
     <Screen>
-      <VStack space={10} className="flex-1 pt-6">
+      <VStack space={10} className="flex-1 pt-8">
         {/* Back nav */}
         <Pressable onPress={() => router.back()} className="self-start -ml-1 h-11 px-1 justify-center">
           <Text className="text-text-secondary text-base">← voltar</Text>
