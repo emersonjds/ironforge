@@ -6,5 +6,4 @@ export * from "./coach.mock";
 export * from "./progress.mock";
 export * from "./notifications.mock";
 export * from "./coach-students.mock";
-export * from "./feed.mock";
 export * from "./coach-finance.mock";

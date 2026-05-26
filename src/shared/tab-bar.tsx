@@ -21,7 +21,7 @@ export const ATHLETE_TABS: Record<string, TabConfig> = {
   index: { label: "Início", icon: "home-outline", iconActive: "home" },
   workouts: { label: "Treinos", icon: "barbell-outline", iconActive: "barbell" },
   progress: { label: "Progresso", icon: "stats-chart-outline", iconActive: "stats-chart" },
-  reels: { label: "Reels", icon: "play-circle-outline", iconActive: "play-circle" },
+  profile: { label: "Perfil", icon: "person-outline", iconActive: "person" },
 };
 
 interface TabBarProps extends BottomTabBarProps {
