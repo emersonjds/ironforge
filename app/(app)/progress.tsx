@@ -9,6 +9,7 @@ import {
   mockBodyWeightSeries,
   mockWeeklyVolume,
   mockPrHistory,
+  mockConsistencyWeeks,
 } from "@shared/mocks";
 
 cssInterop(ScrollView, { className: "style" });
@@ -88,6 +89,17 @@ export default function ProgressScreen() {
               </VStack>
             </Card>
 
+            {/* Consistência de treino (grid estilo contribuição) */}
+            <Card variant="raised" padding="lg">
+              <VStack space={3}>
+                <Text variant="label">Consistência de Treino</Text>
+                <Text variant="caption" className="normal-case tracking-normal -mt-1">
+                  Cada quadrado é um dia. Mais escuro = treino mais consistente.
+                </Text>
+                <ConsistencyGrid weeks={mockConsistencyWeeks} />
+              </VStack>
+            </Card>
+
             {/* Volume semanal por grupo */}
             <Card variant="raised" padding="lg">
               <VStack space={4}>
@@ -146,5 +158,37 @@ export default function ProgressScreen() {
         </View>
       </ScrollView>
     </Screen>
+  );
+}
+
+// 5 níveis de intensidade (vazio → forest-500). Consistência, não streak.
+const LEVEL_BG = ["bg-surface-300", "bg-forest-100", "bg-forest-200", "bg-forest-400", "bg-forest-500"];
+
+function ConsistencyGrid({ weeks }: { weeks: number[][] }) {
+  return (
+    <VStack space={3}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <View className="flex-row" style={{ gap: 3 }}>
+          {weeks.map((week, wi) => (
+            <View key={wi} style={{ gap: 3 }}>
+              {week.map((level, di) => (
+                <View
+                  key={di}
+                  className={LEVEL_BG[level] ?? "bg-surface-300"}
+                  style={{ width: 12, height: 12, borderRadius: 2 }}
+                />
+              ))}
+            </View>
+          ))}
+        </View>
+      </ScrollView>
+      <HStack space={1} align="center" justify="end">
+        <Text variant="caption" className="normal-case tracking-normal mr-1">menos</Text>
+        {LEVEL_BG.map((c, i) => (
+          <View key={i} className={c} style={{ width: 10, height: 10, borderRadius: 2 }} />
+        ))}
+        <Text variant="caption" className="normal-case tracking-normal ml-1">mais</Text>
+      </HStack>
+    </VStack>
   );
 }

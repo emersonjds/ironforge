@@ -42,3 +42,16 @@ export const mockPrHistory: PrEntry[] = [
   { id: "pr-3", exercise: "Levantamento Terra", weightKg: 200, reps: 1, date: "02/03" },
   { id: "pr-4", exercise: "Desenvolvimento", weightKg: 70, reps: 6, date: "20/02" },
 ];
+
+/**
+ * Grid de consistência (26 semanas × 7 dias), nível 0–4 — mock determinístico.
+ * Foco em consistência (não streak): 0 = sem treino, 4 = treino mais completo.
+ */
+export const mockConsistencyWeeks: number[][] = Array.from({ length: 26 }, (_, w) =>
+  Array.from({ length: 7 }, (_, d) => {
+    const trainsToday = d === 0 || d === 2 || d === 4 || d === 5; // seg/qua/sex/sáb
+    if (!trainsToday) return 0;
+    if ((w * 7 + d) % 11 === 0) return 0; // alguns furos realistas
+    return Math.min(1 + Math.floor((w / 26) * 3), 4); // mais consistente nas últimas semanas
+  }),
+);
