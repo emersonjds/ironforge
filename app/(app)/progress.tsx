@@ -3,7 +3,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { cssInterop } from "nativewind";
 import { Screen, VStack, HStack, Text, Card, AppHeader } from "@ui/index";
 import { colors } from "@theme/colors";
+import { router } from "expo-router";
 import {
+  mockUser,
   mockBodyWeightSeries,
   mockWeeklyVolume,
   mockPrHistory,
@@ -23,7 +25,12 @@ export default function ProgressScreen() {
 
   return (
     <Screen edges={["top"]} padded={false}>
-      <AppHeader avatarUrl={null} hasNotifications />
+      <AppHeader
+        avatarUrl={mockUser.avatarUrl}
+        hasNotifications
+        onPressBell={() => router.push("/(app)/notifications")}
+        onPressAvatar={() => router.push("/(app)/profile")}
+      />
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className="px-5 pt-1 pb-28">
           <VStack space={5}>

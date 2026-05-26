@@ -60,7 +60,12 @@ export default function DashboardScreen() {
 
   return (
     <Screen edges={["top"]} padded={false}>
-      <AppHeader avatarUrl={mockUser.avatarUrl} hasNotifications />
+      <AppHeader
+        avatarUrl={mockUser.avatarUrl}
+        hasNotifications
+        onPressBell={() => router.push("/(app)/notifications")}
+        onPressAvatar={() => router.push("/(app)/profile")}
+      />
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className="px-5 pt-1 pb-28">
           <VStack space={6}>
@@ -295,8 +300,10 @@ function UpcomingSessions() {
               i > 0 ? "border-t border-border-subtle" : ""
             }`}
           >
-            <View className="h-10 w-10 rounded-lg bg-forest-100 items-center justify-center">
-              <Text className="text-2xs font-bold text-forest-600">{s.dayAbbrev}</Text>
+            <View className="h-11 w-11 rounded-xl bg-forest-500 items-center justify-center">
+              <Text className="text-[11px] font-black tracking-widest text-white leading-none">
+                {s.dayAbbrev}
+              </Text>
             </View>
             <VStack space={1} className="flex-1">
               <Text className="text-sm font-semibold text-text-primary">{s.name}</Text>

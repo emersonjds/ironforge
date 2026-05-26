@@ -51,7 +51,12 @@ export default function ProfileScreen() {
 
   return (
     <Screen edges={["top"]} padded={false}>
-      <AppHeader avatarUrl={mockUser.avatarUrl} hasNotifications />
+      <AppHeader
+        avatarUrl={mockUser.avatarUrl}
+        hasNotifications
+        onPressBell={() => router.push("/(app)/notifications")}
+        onPressAvatar={() => router.push("/(app)/profile")}
+      />
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className="px-5 pt-1 pb-28">
           <VStack space={5}>

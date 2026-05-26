@@ -6,6 +6,7 @@ import { Screen, VStack, HStack, Text, Card, AppHeader } from "@ui/index";
 import { colors } from "@theme/colors";
 import { SEED_PLAN } from "@features/plans/data/seed-plan";
 import { getExercise } from "@features/exercises/data/catalog";
+import { mockUser } from "@shared/mocks";
 import type { Muscle, PlanDay } from "@/types/domain";
 
 cssInterop(ScrollView, { className: "style" });
@@ -40,7 +41,12 @@ function muscleSummary(day: PlanDay): string {
 export default function WorkoutsScreen() {
   return (
     <Screen edges={["top"]} padded={false}>
-      <AppHeader avatarUrl={null} hasNotifications />
+      <AppHeader
+        avatarUrl={mockUser.avatarUrl}
+        hasNotifications
+        onPressBell={() => router.push("/(app)/notifications")}
+        onPressAvatar={() => router.push("/(app)/profile")}
+      />
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className="px-5 pt-1 pb-28">
           <VStack space={5}>
@@ -64,8 +70,8 @@ export default function WorkoutsScreen() {
                   >
                     <Card variant="raised" padding="lg">
                       <HStack space={4} align="center">
-                        <View className="h-12 w-12 rounded-lg bg-forest-100 items-center justify-center">
-                          <Text className="font-display text-lg font-black text-forest-600">
+                        <View className="h-12 w-12 rounded-xl bg-forest-500 items-center justify-center">
+                          <Text className="font-display text-lg font-black text-white leading-none">
                             {day.slotLabel}
                           </Text>
                         </View>
