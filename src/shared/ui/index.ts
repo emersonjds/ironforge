@@ -10,6 +10,8 @@ export { VStack, HStack } from "./stack";
 export type { StackProps } from "./stack";
 export { Screen } from "./screen";
 export type { ScreenProps } from "./screen";
+export { Logo } from "./logo";
+export type { LogoProps } from "./logo";
 export { Divider } from "./divider";
 export { EmptyState } from "./empty-state";
 export type { EmptyStateProps } from "./empty-state";
