@@ -157,12 +157,12 @@ function HydrationCard() {
             Meta: {mockHydration.goalLiters.toFixed(1)}L
           </Text>
         </HStack>
-        <HStack space={1} align="end">
-          <Text className="font-display text-4xl font-black text-text-primary">
+        <View className="flex-row items-baseline gap-1.5">
+          <Text className="font-display text-4xl font-black text-text-primary leading-none">
             {mockHydration.currentLiters.toFixed(1)}
           </Text>
-          <Text className="text-base text-text-tertiary mb-1.5">Litros</Text>
-        </HStack>
+          <Text className="text-base font-semibold text-text-tertiary leading-none">Litros</Text>
+        </View>
         <View className="h-2 rounded-full bg-surface-300 overflow-hidden">
           <View className="h-2 rounded-full bg-forest-500" style={{ width: `${pct * 100}%` }} />
         </View>

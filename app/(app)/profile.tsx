@@ -108,12 +108,12 @@ export default function ProfileScreen() {
                     <Text className="text-xs font-semibold text-forest-500">Ver histórico</Text>
                   </Pressable>
                 </HStack>
-                <HStack space={1} align="end">
-                  <Text className="font-display text-5xl font-black text-text-primary">
+                <View className="flex-row items-baseline gap-1.5">
+                  <Text className="font-display text-5xl font-black text-text-primary leading-none">
                     {mockPersonalRecord.weightKg}
                   </Text>
-                  <Text className="text-xl text-text-tertiary mb-1.5">kg</Text>
-                </HStack>
+                  <Text className="text-xl font-semibold text-text-tertiary leading-none">kg</Text>
+                </View>
                 <Text variant="bodySmall">
                   {mockPersonalRecord.exercise} · {mockPersonalRecord.reps} reps
                 </Text>

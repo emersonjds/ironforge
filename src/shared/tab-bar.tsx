@@ -13,10 +13,10 @@ cssInterop(View, { className: "style" });
 type IoniconName = keyof typeof Ionicons.glyphMap;
 
 const TABS: Record<string, { label: string; icon: IoniconName; iconActive: IoniconName }> = {
-  index: { label: "Dashboard", icon: "home-outline", iconActive: "home" },
-  workouts: { label: "Workouts", icon: "barbell-outline", iconActive: "barbell" },
-  progress: { label: "Progress", icon: "stats-chart-outline", iconActive: "stats-chart" },
-  profile: { label: "Profile", icon: "person-outline", iconActive: "person" },
+  index: { label: "Início", icon: "home-outline", iconActive: "home" },
+  workouts: { label: "Treinos", icon: "barbell-outline", iconActive: "barbell" },
+  progress: { label: "Progresso", icon: "stats-chart-outline", iconActive: "stats-chart" },
+  profile: { label: "Perfil", icon: "person-outline", iconActive: "person" },
 };
 
 export function TabBar({ state, navigation }: BottomTabBarProps) {
