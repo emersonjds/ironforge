@@ -1,8 +1,8 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
 import { cssInterop } from "nativewind";
 import { router } from "expo-router";
-import { Screen, VStack, HStack, Text, Card, Button } from "@ui/index";
+import { Screen, VStack, HStack, Text, Card, Button, Input } from "@ui/index";
 import { SEED_MESOCYCLE } from "@features/plans/data/seed-plan";
 import { getExercise } from "@features/exercises/data/catalog";
 import {
@@ -11,13 +11,26 @@ import {
   sessionDurationSeconds,
   type ExerciseDelta,
 } from "@features/workout/lib/session-stats";
-import { useLastFinishedSession } from "@features/workout/hooks/use-last-finished-session";
+import {
+  useLastFinishedSession,
+  updateLastFinishedSessionNotes,
+} from "@features/workout/hooks/use-last-finished-session";
 import { formatDuration } from "@lib/utils/format";
 
 cssInterop(View, { className: "style" });
 
 export function WorkoutSummaryScreen() {
   const session = useLastFinishedSession();
+  const [comment, setComment] = useState("");
+
+  useEffect(() => {
+    if (session?.notes) setComment(session.notes);
+  }, [session]);
+
+  async function handleConclude() {
+    await updateLastFinishedSessionNotes(comment);
+    router.replace("/(app)");
+  }
 
   const deltas = useMemo<ExerciseDelta[]>(() => {
     if (!session) return [];
@@ -100,6 +113,19 @@ export function WorkoutSummaryScreen() {
           </Card>
         </VStack>
 
+        {/* Comentário do treino */}
+        <VStack space={3}>
+          <Text variant="label">Como foi o treino?</Text>
+          <Input
+            placeholder="Anote como você se sentiu, dores, energia… (opcional)"
+            multiline
+            value={comment}
+            onChangeText={setComment}
+            className="h-24 py-3"
+            textAlignVertical="top"
+          />
+        </VStack>
+
         <View className="flex-1" />
 
         <Button
@@ -107,7 +133,7 @@ export function WorkoutSummaryScreen() {
           variant="solid"
           size="xl"
           fullWidth
-          onPress={() => router.replace("/(app)")}
+          onPress={handleConclude}
         />
       </VStack>
     </Screen>
