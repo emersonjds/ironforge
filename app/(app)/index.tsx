@@ -1,36 +1,31 @@
 import { useState } from "react";
-import { ScrollView, View, Pressable } from "react-native";
+import { ScrollView, View, Pressable, StyleSheet } from "react-native";
+import { Image } from "expo-image";
+import { Ionicons } from "@expo/vector-icons";
 import { cssInterop } from "nativewind";
-import { Screen, VStack, HStack, Text, Button, Card } from "@ui/index";
-import { useAuthStore } from "@features/auth/store";
 import { router } from "expo-router";
-import { getTodayPlanDay, SEED_MESOCYCLE } from "@features/plans/data/seed-plan";
-import { getExercise } from "@features/exercises/data/catalog";
-import { useActiveSessionStore } from "@features/workout/store";
+import { Screen, VStack, HStack, Text, Button, Card, AppHeader } from "@ui/index";
+import { colors } from "@theme/colors";
+import {
+  mockUser,
+  mockTodayHero,
+  mockHydration,
+  mockSupplements,
+  mockUpcomingSessions,
+  mockReminder,
+  type Supplement,
+} from "@shared/mocks";
+import { SEED_PLAN } from "@features/plans/data/seed-plan";
 import { useSessionHistory } from "@features/workout/hooks/use-session-history";
 import { DaySessionSheet } from "@features/workout/components/day-session-sheet";
-import type { Muscle } from "@/types/domain";
 import type { StoredSession } from "@features/workout/hooks/use-last-finished-session";
 
 cssInterop(ScrollView, { className: "style" });
 cssInterop(View, { className: "style" });
 cssInterop(Pressable, { className: "style" });
 
-const MUSCLE_LABEL: Partial<Record<Muscle, string>> = {
-  chest: "peito",
-  back_lats: "costas",
-  back_upper: "costas",
-  shoulders_front: "ombro",
-  shoulders_side: "ombro",
-  shoulders_rear: "ombro",
-  triceps: "tríceps",
-  biceps: "bíceps",
-  quads: "quadríceps",
-  hamstrings: "posterior",
-  glutes: "glúteos",
-  calves: "panturrilha",
-};
-
+const HERO_IMAGE =
+  "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=900&q=70&fit=crop";
 const DAY_SHORT = ["SEG", "TER", "QUA", "QUI", "SEX", "SAB", "DOM"];
 
 function getGreeting(): string {
@@ -40,11 +35,9 @@ function getGreeting(): string {
   return "Boa noite";
 }
 
-export default function TodayScreen() {
-  const user = useAuthStore((s) => s.user);
-  const hasActiveSession = useActiveSessionStore((s) => s.session !== null);
+export default function DashboardScreen() {
   const sessionHistory = useSessionHistory();
-
+  const [supplements, setSupplements] = useState<Supplement[]>(mockSupplements);
   const [sheetSession, setSheetSession] = useState<StoredSession | null>(null);
   const [sheetDateLabel, setSheetDateLabel] = useState("");
   const [sheetVisible, setSheetVisible] = useState(false);
@@ -57,203 +50,46 @@ export default function TodayScreen() {
     setSheetVisible(true);
   }
 
-  const planDay = getTodayPlanDay();
-
-  const musclesHit = new Set<string>();
-  for (const pe of planDay.exercises) {
-    const ex = getExercise(pe.exerciseId);
-    if (ex) {
-      const label = MUSCLE_LABEL[ex.primaryMuscle];
-      if (label) musclesHit.add(label);
-    }
+  function toggleSupplement(id: string) {
+    setSupplements((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, taken: !s.taken } : s)),
+    );
   }
-  const muscleSummary = Array.from(musclesHit).join(" · ");
 
-  const totalSets = planDay.exercises.reduce((sum, pe) => sum + pe.targetSets, 0);
-  const estMin = Math.round(
-    planDay.exercises.reduce((sum, pe) => sum + pe.targetSets * (pe.restSeconds + 45), 0) / 60,
-  );
-
-  const today = new Date();
-  const dayIdx = (today.getDay() + 6) % 7;
-  const weekLabel = today.toLocaleDateString("pt-BR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
-  const firstName = user?.displayName?.split(" ")[0] ?? "lifter";
-  const greeting = getGreeting();
+  const firstName = mockUser.displayName.split(" ")[0];
 
   return (
     <Screen edges={["top"]} padded={false}>
+      <AppHeader avatarUrl={mockUser.avatarUrl} hasNotifications />
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View className="px-5 pt-10 pb-24">
-        <VStack space={8}>
-          {/* Greeting */}
-          <VStack space={2}>
-            <Text variant="title">{greeting}, {firstName}</Text>
-            <Text variant="bodySmall" className="capitalize">
-              {weekLabel} · semana 1 de {SEED_MESOCYCLE.weeks}
-            </Text>
-          </VStack>
+        <View className="px-5 pt-1 pb-28">
+          <VStack space={6}>
+            <VStack space={1}>
+              <Text variant="title">
+                {getGreeting()}, {firstName}
+              </Text>
+              <Text variant="bodySmall">Pronto para superar seus limites hoje?</Text>
+            </VStack>
 
-          {/* Hero card */}
-          <Card variant="accent" padding="xl">
-            <VStack space={6}>
-              <HStack justify="between" align="center">
-                <Text variant="label">PRÓXIMO TREINO</Text>
-                <Text className="text-2xs font-semibold tracking-widest text-forest-400 uppercase">
-                  {SEED_MESOCYCLE.name}
-                </Text>
-              </HStack>
+            <TodayHeroCard />
 
+            <HydrationCard />
+
+            <SupplementsCard items={supplements} onToggle={toggleSupplement} />
+
+            <WeekStrip sessionHistory={sessionHistory} onOpenDay={openDaySheet} />
+
+            <UpcomingSessions />
+
+            <Card variant="sunken" padding="lg">
               <VStack space={2}>
-                <Text variant="display" className="text-forest-50">
-                  {planDay.name.toUpperCase()}
-                </Text>
-                <Text variant="bodySmall" className="text-text-secondary">
-                  {muscleSummary}
+                <Text variant="label">Lembrete</Text>
+                <Text variant="bodySmall" className="text-text-secondary leading-relaxed">
+                  {mockReminder}
                 </Text>
               </VStack>
-
-              {/* Stats row */}
-              <View className="flex-row border-t border-border-subtle py-4">
-                <VStack space={2} className="flex-1 items-center">
-                  <Text variant="label">EXERCÍCIOS</Text>
-                  <Text className="text-2xl font-bold font-mono text-text-primary">
-                    {planDay.exercises.length}
-                  </Text>
-                </VStack>
-                <View className="w-px bg-border-subtle" />
-                <VStack space={2} className="flex-1 items-center">
-                  <Text variant="label">SÉRIES</Text>
-                  <Text className="text-2xl font-bold font-mono text-text-primary">
-                    {totalSets}
-                  </Text>
-                </VStack>
-                <View className="w-px bg-border-subtle" />
-                <VStack space={2} className="flex-1 items-center">
-                  <Text variant="label">DURAÇÃO</Text>
-                  <Text className="text-2xl font-bold font-mono text-text-primary">
-                    ~{estMin}
-                    <Text className="text-sm text-text-tertiary font-semibold">min</Text>
-                  </Text>
-                </VStack>
-              </View>
-
-              <Button
-                label={hasActiveSession ? "► CONTINUAR TREINO" : "► COMEÇAR TREINO"}
-                variant="solid"
-                size="xl"
-                fullWidth
-                onPress={() =>
-                  router.push(hasActiveSession ? "/(workout)/logger" : "/(workout)/preview")
-                }
-              />
-            </VStack>
-          </Card>
-
-          {/* Week strip */}
-          <VStack space={4}>
-            <HStack justify="between" align="center">
-              <Text variant="label">ESTA SEMANA</Text>
-              <Text variant="caption">
-                0 de {SEED_MESOCYCLE.days.length} sessões
-              </Text>
-            </HStack>
-            <HStack space={2}>
-              {DAY_SHORT.map((abbrev, idx) => {
-                const isToday = idx === dayIdx;
-                const hasWorkout = idx < SEED_MESOCYCLE.days.length;
-
-                // data numérica do dia desta semana
-                const dayDate = new Date(today);
-                dayDate.setDate(today.getDate() - dayIdx + idx);
-                const dayNumber = dayDate.getDate();
-                const dateKey = dayDate.toISOString().slice(0, 10);
-                const sessionForDay = sessionHistory[dateKey] ?? null;
-                const isDone = sessionForDay !== null;
-
-                const bgColor = isToday
-                  ? "#FF5A1F26"
-                  : hasWorkout
-                    ? "#111114"
-                    : "#050506";
-                const borderColor = isToday
-                  ? "#FF5A1F"
-                  : isDone
-                    ? "#FF5A1F60"
-                    : hasWorkout
-                      ? "#27272A"
-                      : "#1F1F23";
-                const labelColor = isToday
-                  ? "#FF7A3C"
-                  : hasWorkout
-                    ? "#71717A"
-                    : "#52525B";
-                const dateColor = isToday
-                  ? "#FAFAFA"
-                  : isDone
-                    ? "#FAFAFA"
-                    : hasWorkout
-                      ? "#A1A1AA"
-                      : "#3F3F46";
-
-                return (
-                  <Pressable
-                    key={abbrev}
-                    onPress={() => openDaySheet(dayDate, sessionForDay)}
-                    accessibilityLabel={`Ver treino de ${abbrev} ${dayNumber}`}
-                    className="flex-1 rounded-lg items-center justify-center active:opacity-70"
-                    style={{
-                      paddingVertical: 10,
-                      gap: 3,
-                      backgroundColor: bgColor,
-                      borderWidth: 1,
-                      borderColor,
-                    }}
-                  >
-                    <Text
-                      className="font-bold tracking-widest"
-                      style={{ color: labelColor, fontSize: 9 }}
-                    >
-                      {abbrev}
-                    </Text>
-                    <Text
-                      className="font-semibold tabular-nums"
-                      style={{ color: dateColor, fontSize: 13 }}
-                    >
-                      {dayNumber}
-                    </Text>
-                    {/* bolinha: laranja se fez o treino */}
-                    <View
-                      className="w-1.5 h-1.5 rounded-full"
-                      style={{
-                        backgroundColor: isDone
-                          ? "#FF5A1F"
-                          : isToday
-                            ? "#FF5A1F80"
-                            : hasWorkout
-                              ? "#3F3F46"
-                              : "transparent",
-                      }}
-                    />
-                  </Pressable>
-                );
-              })}
-            </HStack>
+            </Card>
           </VStack>
-
-          {/* Dica/mensagem do dia */}
-          <Card variant="raised" padding="lg">
-            <VStack space={3}>
-              <Text variant="label">LEMBRETE</Text>
-              <Text variant="body" className="text-text-secondary leading-relaxed">
-                Anotar o RIR de cada série é o que transforma o app em coaching real. Sem isso, só resta força bruta.
-              </Text>
-            </VStack>
-          </Card>
-        </VStack>
         </View>
       </ScrollView>
 
@@ -264,5 +100,214 @@ export default function TodayScreen() {
         onClose={() => setSheetVisible(false)}
       />
     </Screen>
+  );
+}
+
+function TodayHeroCard() {
+  return (
+    <View className="rounded-xl overflow-hidden" style={{ minHeight: 200 }}>
+      <Image source={{ uri: HERO_IMAGE }} style={StyleSheet.absoluteFill} contentFit="cover" />
+      <View style={StyleSheet.absoluteFill} className="bg-forest-900/70" />
+      <View className="p-6 flex-1 justify-between" style={{ minHeight: 200 }}>
+        <View className="self-start bg-forest-500 rounded-pill px-3 py-1">
+          <Text className="text-2xs font-bold uppercase tracking-widest text-white">
+            {mockTodayHero.tag}
+          </Text>
+        </View>
+        <VStack space={3} className="mt-4">
+          <VStack space={1}>
+            <Text className="font-display text-3xl font-black text-white tracking-tight">
+              {mockTodayHero.name}
+            </Text>
+            <Text className="text-sm text-white/80">{mockTodayHero.focus}</Text>
+            <Text className="text-xs text-white/60 mt-1">
+              Tempo estimado: {mockTodayHero.estimatedMin} min
+            </Text>
+          </VStack>
+          <Button
+            label="Iniciar Agora"
+            variant="solid"
+            size="lg"
+            trailing={<Ionicons name="arrow-forward" size={18} color="#FFFFFF" />}
+            className="self-start"
+            onPress={() => router.push("/(workout)/preview")}
+          />
+        </VStack>
+      </View>
+    </View>
+  );
+}
+
+function HydrationCard() {
+  const pct = Math.min(mockHydration.currentLiters / mockHydration.goalLiters, 1);
+  return (
+    <Card variant="raised" padding="lg">
+      <VStack space={3}>
+        <HStack justify="between" align="center">
+          <HStack space={2} align="center">
+            <Ionicons name="water-outline" size={16} color={colors.forest[500]} />
+            <Text variant="label">Hidratação</Text>
+          </HStack>
+          <Text variant="caption" className="normal-case tracking-normal">
+            Meta: {mockHydration.goalLiters.toFixed(1)}L
+          </Text>
+        </HStack>
+        <HStack space={1} align="end">
+          <Text className="font-display text-4xl font-black text-text-primary">
+            {mockHydration.currentLiters.toFixed(1)}
+          </Text>
+          <Text className="text-base text-text-tertiary mb-1.5">Litros</Text>
+        </HStack>
+        <View className="h-2 rounded-full bg-surface-300 overflow-hidden">
+          <View className="h-2 rounded-full bg-forest-500" style={{ width: `${pct * 100}%` }} />
+        </View>
+      </VStack>
+    </Card>
+  );
+}
+
+function SupplementsCard({
+  items,
+  onToggle,
+}: {
+  items: Supplement[];
+  onToggle: (id: string) => void;
+}) {
+  return (
+    <Card variant="raised" padding="lg">
+      <VStack space={4}>
+        <HStack space={2} align="center">
+          <Ionicons name="nutrition-outline" size={16} color={colors.forest[500]} />
+          <Text variant="label">Suplementação</Text>
+        </HStack>
+        <VStack space={3}>
+          {items.map((s) => (
+            <Pressable
+              key={s.id}
+              onPress={() => onToggle(s.id)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: s.taken }}
+              accessibilityLabel={`${s.name}, ${s.dose}`}
+              className="flex-row items-center gap-3 active:opacity-70"
+            >
+              <Ionicons
+                name={s.taken ? "checkmark-circle" : "ellipse-outline"}
+                size={24}
+                color={s.taken ? colors.forest[500] : colors.text.tertiary}
+              />
+              <Text
+                className={`text-base flex-1 ${
+                  s.taken ? "text-text-tertiary line-through" : "text-text-primary"
+                }`}
+              >
+                {s.name}
+              </Text>
+              <Text variant="bodySmall">{s.dose}</Text>
+            </Pressable>
+          ))}
+        </VStack>
+      </VStack>
+    </Card>
+  );
+}
+
+function WeekStrip({
+  sessionHistory,
+  onOpenDay,
+}: {
+  sessionHistory: Record<string, StoredSession>;
+  onOpenDay: (date: Date, session: StoredSession | null) => void;
+}) {
+  const today = new Date();
+  const dayIdx = (today.getDay() + 6) % 7;
+
+  return (
+    <VStack space={3}>
+      <HStack justify="between" align="center">
+        <Text variant="label">Frequência Semanal</Text>
+        <Text variant="caption" className="normal-case tracking-normal">
+          {Object.keys(sessionHistory).length} de {SEED_PLAN.days.length} sessões
+        </Text>
+      </HStack>
+      <HStack space={2}>
+        {DAY_SHORT.map((abbrev, idx) => {
+          const isToday = idx === dayIdx;
+          const dayDate = new Date(today);
+          dayDate.setDate(today.getDate() - dayIdx + idx);
+          const dateKey = dayDate.toISOString().slice(0, 10);
+          const sessionForDay = sessionHistory[dateKey] ?? null;
+          const isDone = sessionForDay !== null;
+
+          const containerClass = isToday
+            ? "bg-forest-500 border border-forest-500"
+            : isDone
+              ? "bg-forest-100 border border-forest-500"
+              : "bg-bg-sunken border border-border";
+
+          return (
+            <Pressable
+              key={abbrev}
+              onPress={() => onOpenDay(dayDate, sessionForDay)}
+              accessibilityLabel={`Ver treino de ${abbrev} ${dayDate.getDate()}`}
+              className={`flex-1 rounded-lg items-center justify-center py-2.5 gap-1 active:opacity-70 ${containerClass}`}
+            >
+              <Text
+                className={`text-2xs font-bold tracking-wide ${
+                  isToday ? "text-white/80" : "text-text-tertiary"
+                }`}
+              >
+                {abbrev}
+              </Text>
+              <Text
+                className={`text-sm font-bold ${
+                  isToday ? "text-white" : isDone ? "text-forest-600" : "text-text-secondary"
+                }`}
+              >
+                {dayDate.getDate()}
+              </Text>
+              <View
+                className={`h-1.5 w-1.5 rounded-full ${
+                  isDone ? "bg-forest-500" : isToday ? "bg-white/60" : "bg-transparent"
+                }`}
+              />
+            </Pressable>
+          );
+        })}
+      </HStack>
+    </VStack>
+  );
+}
+
+function UpcomingSessions() {
+  return (
+    <VStack space={3}>
+      <HStack justify="between" align="center">
+        <Text variant="label">Próximos Treinos</Text>
+        <Pressable onPress={() => router.push("/(app)/workouts")} hitSlop={8}>
+          <Text className="text-xs font-semibold text-forest-500">Ver agenda</Text>
+        </Pressable>
+      </HStack>
+      <Card variant="raised" padding="none">
+        {mockUpcomingSessions.map((s, i) => (
+          <View
+            key={s.id}
+            className={`flex-row items-center gap-3 px-4 py-3 ${
+              i > 0 ? "border-t border-border-subtle" : ""
+            }`}
+          >
+            <View className="h-10 w-10 rounded-lg bg-forest-100 items-center justify-center">
+              <Text className="text-2xs font-bold text-forest-600">{s.dayAbbrev}</Text>
+            </View>
+            <VStack space={1} className="flex-1">
+              <Text className="text-sm font-semibold text-text-primary">{s.name}</Text>
+              <Text className="text-xs text-text-tertiary" numberOfLines={1}>
+                {s.description}
+              </Text>
+            </VStack>
+            <Ionicons name="chevron-forward" size={18} color={colors.text.tertiary} />
+          </View>
+        ))}
+      </Card>
+    </VStack>
   );
 }
