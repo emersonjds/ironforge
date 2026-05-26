@@ -61,7 +61,7 @@ export function WorkoutPreviewScreen() {
                           {ex?.name ?? "—"}
                         </Text>
                         {isSuperset && pe.order < (pairId ? planDay.exercises.find((p) => p.id === pairId)?.order ?? 999 : 999) ? (
-                          <Text className="text-2xs text-ember-400 uppercase tracking-widest">
+                          <Text className="text-2xs text-forest-400 uppercase tracking-widest">
                             superset
                           </Text>
                         ) : null}

@@ -156,13 +156,13 @@ export function NumericKeypadSheet({
             <View className="px-4 mb-4">
               <Pressable
                 onPress={tapSameAsPrevious}
-                className="h-14 w-full rounded-xl bg-ember-500/20 border border-ember-500 items-center justify-center flex-row gap-3 active:bg-ember-500/30"
+                className="h-14 w-full rounded-xl bg-forest-500/20 border border-forest-500 items-center justify-center flex-row gap-3 active:bg-forest-500/30"
               >
-                <Text className="text-ember-300 font-bold uppercase tracking-widest text-sm">
+                <Text className="text-forest-300 font-bold uppercase tracking-widest text-sm">
                   = ANTERIOR
                 </Text>
-                <View className="w-px h-4 bg-ember-500/50" />
-                <Text className="text-ember-400 text-base font-semibold font-mono">
+                <View className="w-px h-4 bg-forest-500/50" />
+                <Text className="text-forest-400 text-base font-semibold font-mono">
                   {formatKg(previous.kg)}kg × {previous.reps}
                   {previous.rir !== null ? `  RIR ${previous.rir}` : ""}
                 </Text>
@@ -181,7 +181,7 @@ export function NumericKeypadSheet({
                   haptics.tap();
                 }}
                 className={`flex-1 h-11 rounded-lg items-center justify-center ${
-                  field === f ? "bg-ember-500" : "bg-bg-sunken border border-border"
+                  field === f ? "bg-forest-500" : "bg-bg-sunken border border-border"
                 }`}
               >
                 <Text className={`font-bold uppercase tracking-widest text-xs ${field === f ? "text-white" : "text-text-secondary"}`}>
@@ -251,7 +251,7 @@ export function NumericKeypadSheet({
           <View className="px-4 pb-3">
             <Pressable
               onPress={advanceField}
-              className="h-14 rounded-xl bg-ember-500 items-center justify-center flex-row gap-2 active:bg-ember-600"
+              className="h-14 rounded-xl bg-forest-500 items-center justify-center flex-row gap-2 active:bg-forest-600"
             >
               <Text className="text-text-inverse font-bold uppercase tracking-wider text-base">
                 {field === "rir" ? "✓ confirmar série" : "próximo →"}
@@ -273,7 +273,7 @@ function NumKey({ onPress, label, disabled }: { onPress: () => void; label: stri
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      className={`flex-1 h-14 rounded-lg bg-bg-sunken border border-border-subtle items-center justify-center active:bg-surface-700 ${disabled ? "opacity-30" : ""}`}
+      className={`flex-1 h-14 rounded-lg bg-bg-sunken border border-border-subtle items-center justify-center active:bg-surface-300 ${disabled ? "opacity-30" : ""}`}
     >
       <Text className="text-text-primary text-2xl font-semibold">{label}</Text>
     </Pressable>
@@ -284,7 +284,7 @@ function QuickKey({ onPress, label }: { onPress: () => void; label: string }) {
   return (
     <Pressable
       onPress={onPress}
-      className="h-14 rounded-lg bg-bg-sunken border border-border items-center justify-center active:bg-surface-700"
+      className="h-14 rounded-lg bg-bg-sunken border border-border items-center justify-center active:bg-surface-300"
     >
       <Text className="text-text-secondary text-base font-semibold">{label}</Text>
     </Pressable>

@@ -59,8 +59,8 @@ export default function ProfileScreen() {
         {/* Avatar card */}
         <Card variant="raised" padding="xl">
           <HStack space={5} align="center">
-            <View className="w-16 h-16 rounded-full bg-ember-500/15 border-2 border-ember-500/60 items-center justify-center">
-              <Text className="text-xl font-bold text-ember-400">{initials}</Text>
+            <View className="w-16 h-16 rounded-full bg-forest-500/15 border-2 border-forest-500/60 items-center justify-center">
+              <Text className="text-xl font-bold text-forest-400">{initials}</Text>
             </View>
             <VStack space={1} className="flex-1">
               <Text className="text-lg font-bold text-text-primary">{user?.displayName ?? "—"}</Text>

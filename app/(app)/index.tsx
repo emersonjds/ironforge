@@ -102,13 +102,13 @@ export default function TodayScreen() {
             <VStack space={6}>
               <HStack justify="between" align="center">
                 <Text variant="label">PRÓXIMO TREINO</Text>
-                <Text className="text-2xs font-semibold tracking-widest text-ember-400 uppercase">
+                <Text className="text-2xs font-semibold tracking-widest text-forest-400 uppercase">
                   {SEED_MESOCYCLE.name}
                 </Text>
               </HStack>
 
               <VStack space={2}>
-                <Text variant="display" className="text-ember-50">
+                <Text variant="display" className="text-forest-50">
                   {planDay.name.toUpperCase()}
                 </Text>
                 <Text variant="bodySmall" className="text-text-secondary">

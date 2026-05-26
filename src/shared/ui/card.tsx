@@ -9,7 +9,7 @@ const variantClasses: Record<Variant, string> = {
   default: "bg-bg-raised border border-border",
   raised: "bg-bg-raised border border-border",
   sunken: "bg-bg-sunken border border-border-subtle",
-  accent: "bg-bg-raised border border-ember-500/40",
+  accent: "bg-bg-raised border border-forest-500/40",
 };
 
 export interface CardProps extends ViewProps {

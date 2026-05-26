@@ -188,7 +188,7 @@ export function WorkoutLoggerScreen() {
         {/* Barra de progresso */}
         <View className="h-1 rounded-full bg-bg-sunken overflow-hidden">
           <View
-            className="h-full bg-ember-500 rounded-full"
+            className="h-full bg-forest-500 rounded-full"
             style={{ width: `${((currentIdx + 1) / totalExercises) * 100}%` }}
           />
         </View>
@@ -210,8 +210,8 @@ export function WorkoutLoggerScreen() {
       >
         <VStack space={6}>
           {supersetPartner && supersetPartnerExercise ? (
-            <View className="self-start px-3 py-2 rounded-full bg-ember-500/15 border border-ember-500/40">
-              <Text className="text-2xs font-semibold tracking-widest text-ember-400 uppercase">
+            <View className="self-start px-3 py-2 rounded-full bg-forest-500/15 border border-forest-500/40">
+              <Text className="text-2xs font-semibold tracking-widest text-forest-400 uppercase">
                 SUPERSET · com {supersetPartnerExercise.name}
               </Text>
             </View>
@@ -320,7 +320,7 @@ export function WorkoutLoggerScreen() {
                 <Pressable
                   onPress={handleEndSession}
                   accessibilityLabel="Finalizar treino"
-                  className="flex-[2] h-14 rounded-xl bg-ember-500 items-center justify-center active:opacity-80"
+                  className="flex-[2] h-14 rounded-xl bg-forest-500 items-center justify-center active:opacity-80"
                 >
                   <Text className="text-white font-bold uppercase tracking-wider text-base">✓ finalizar</Text>
                 </Pressable>
@@ -328,7 +328,7 @@ export function WorkoutLoggerScreen() {
                 <Pressable
                   onPress={() => { nextExercise(); timer.stop(); setLastPRMessage(null); }}
                   accessibilityLabel="Próximo exercício"
-                  className="flex-[2] h-14 rounded-xl bg-ember-500 items-center justify-center active:opacity-80"
+                  className="flex-[2] h-14 rounded-xl bg-forest-500 items-center justify-center active:opacity-80"
                 >
                   <Text className="text-white font-bold uppercase tracking-wider text-base">próximo ►</Text>
                 </Pressable>
@@ -339,13 +339,13 @@ export function WorkoutLoggerScreen() {
           <Pressable
             onPress={handleOpenKeypad}
             accessibilityLabel={`Registrar série ${activeSetIndex}`}
-            className="h-16 rounded-xl bg-ember-500 items-center justify-center flex-row gap-3 active:opacity-80"
+            className="h-16 rounded-xl bg-forest-500 items-center justify-center flex-row gap-3 active:opacity-80"
           >
             <Text className="text-white font-bold uppercase tracking-wider text-base">
               ✓ REGISTRAR SÉRIE {activeSetIndex}
             </Text>
             {suggestion ? (
-              <Text className="text-ember-100/70 text-sm font-medium">
+              <Text className="text-forest-100/70 text-sm font-medium">
                 {suggestion.weight > 0 ? `${formatKg(suggestion.weight)}kg×` : ""}{suggestion.reps}
               </Text>
             ) : null}

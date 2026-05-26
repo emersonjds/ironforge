@@ -45,12 +45,12 @@ export function WelcomeScreen() {
             {/* Logo / wordmark */}
             <View className="items-center" style={{ marginTop: 4 }}>
               <Text className="text-7xl font-black font-display tracking-tight leading-none">
-                <Text className="text-ember-500">IRON</Text>
+                <Text className="text-forest-500">IRON</Text>
                 <Text className="text-text-primary">FORGE</Text>
               </Text>
             </View>
 
-            <View className="h-px w-16 bg-ember-500/40" />
+            <View className="h-px w-16 bg-forest-500/40" />
 
             <VStack space={1} align="center">
               <Text className="text-sm text-text-tertiary text-center tracking-widest uppercase">

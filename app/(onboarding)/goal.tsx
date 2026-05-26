@@ -36,7 +36,7 @@ export default function OnboardingGoal() {
             {[0, 1, 2, 3].map((i) => (
               <View
                 key={i}
-                className={`h-1 flex-1 rounded-full ${i === 0 ? "bg-ember-500" : "bg-border"}`}
+                className={`h-1 flex-1 rounded-full ${i === 0 ? "bg-forest-500" : "bg-border"}`}
               />
             ))}
           </HStack>
@@ -57,12 +57,12 @@ export default function OnboardingGoal() {
                 onPress={() => setSelected(opt.value)}
                 className={`rounded-xl border px-5 py-5 active:bg-bg-sunken ${
                   isSelected
-                    ? "bg-ember-500/15 border-ember-500"
+                    ? "bg-forest-500/15 border-forest-500"
                     : "bg-bg-raised border-border"
                 }`}
               >
                 <VStack space={1}>
-                  <Text className={`text-base font-bold ${isSelected ? "text-ember-400" : "text-text-primary"}`}>
+                  <Text className={`text-base font-bold ${isSelected ? "text-forest-400" : "text-text-primary"}`}>
                     {opt.label}
                   </Text>
                   <Text className="text-xs text-text-tertiary">{opt.sub}</Text>

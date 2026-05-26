@@ -53,19 +53,19 @@ export function RestTimerBar({ remainingSeconds, totalSeconds, onAdjust, onSkip 
       </View>
 
       <View className="h-1.5 rounded-full bg-bg-sunken overflow-hidden mb-4">
-        <Animated.View style={barStyle} className="h-full bg-ember-500 rounded-full" />
+        <Animated.View style={barStyle} className="h-full bg-forest-500 rounded-full" />
       </View>
 
       <View className="flex-row gap-2">
         <Pressable
           onPress={() => onAdjust(-15)}
-          className="flex-1 h-11 rounded-lg bg-bg-sunken border border-border items-center justify-center active:bg-surface-700"
+          className="flex-1 h-11 rounded-lg bg-bg-sunken border border-border items-center justify-center active:bg-surface-300"
         >
           <Text className="text-sm text-text-primary font-semibold">-15s</Text>
         </Pressable>
         <Pressable
           onPress={() => onAdjust(15)}
-          className="flex-1 h-11 rounded-lg bg-bg-sunken border border-border items-center justify-center active:bg-surface-700"
+          className="flex-1 h-11 rounded-lg bg-bg-sunken border border-border items-center justify-center active:bg-surface-300"
         >
           <Text className="text-sm text-text-primary font-semibold">+15s</Text>
         </Pressable>

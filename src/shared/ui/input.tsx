@@ -22,7 +22,7 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
   const borderClass = error
     ? "border-error"
     : focused
-      ? "border-ember-500"
+      ? "border-forest-500"
       : "border-border";
 
   return (
