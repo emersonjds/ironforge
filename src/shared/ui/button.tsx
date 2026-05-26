@@ -18,7 +18,7 @@ type Size = "sm" | "md" | "lg" | "xl";
 
 const variantStyles: Record<Variant, { bg: string; text: string; border: string }> = {
   solid: {
-    bg: "bg-ember-500 active:bg-ember-600",
+    bg: "bg-forest-500 active:bg-forest-600",
     text: "text-text-inverse",
     border: "border-transparent",
   },

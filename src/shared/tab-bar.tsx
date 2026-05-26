@@ -46,14 +46,14 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
             className="flex-1 items-center justify-center gap-1 py-1"
           >
             {/* Active indicator dot above icon */}
-            <View className={`w-1 h-1 rounded-full mb-0.5 ${isFocused ? "bg-ember-500" : "bg-transparent"}`} />
+            <View className={`w-1 h-1 rounded-full mb-0.5 ${isFocused ? "bg-forest-500" : "bg-transparent"}`} />
             <Text
-              className={`text-base leading-none ${isFocused ? "text-ember-500" : "text-text-disabled"}`}
+              className={`text-base leading-none ${isFocused ? "text-forest-500" : "text-text-disabled"}`}
             >
               {meta.icon}
             </Text>
             <Text
-              className={`text-2xs font-bold tracking-widest ${isFocused ? "text-ember-400" : "text-text-tertiary"}`}
+              className={`text-2xs font-bold tracking-widest ${isFocused ? "text-forest-400" : "text-text-tertiary"}`}
             >
               {meta.label}
             </Text>

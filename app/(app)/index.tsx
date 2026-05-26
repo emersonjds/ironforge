@@ -9,7 +9,8 @@ import { getExercise } from "@features/exercises/data/catalog";
 import { useActiveSessionStore } from "@features/workout/store";
 import { useSessionHistory } from "@features/workout/hooks/use-session-history";
 import { DaySessionSheet } from "@features/workout/components/day-session-sheet";
-import type { Muscle, Session } from "@/types/domain";
+import type { Muscle } from "@/types/domain";
+import type { StoredSession } from "@features/workout/hooks/use-last-finished-session";
 
 cssInterop(ScrollView, { className: "style" });
 cssInterop(View, { className: "style" });
@@ -44,11 +45,11 @@ export default function TodayScreen() {
   const hasActiveSession = useActiveSessionStore((s) => s.session !== null);
   const sessionHistory = useSessionHistory();
 
-  const [sheetSession, setSheetSession] = useState<Session | null>(null);
+  const [sheetSession, setSheetSession] = useState<StoredSession | null>(null);
   const [sheetDateLabel, setSheetDateLabel] = useState("");
   const [sheetVisible, setSheetVisible] = useState(false);
 
-  function openDaySheet(date: Date, session: Session | null) {
+  function openDaySheet(date: Date, session: StoredSession | null) {
     setSheetSession(session);
     setSheetDateLabel(
       date.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }),
@@ -101,13 +102,13 @@ export default function TodayScreen() {
             <VStack space={6}>
               <HStack justify="between" align="center">
                 <Text variant="label">PRÓXIMO TREINO</Text>
-                <Text className="text-2xs font-semibold tracking-widest text-ember-400 uppercase">
+                <Text className="text-2xs font-semibold tracking-widest text-forest-400 uppercase">
                   {SEED_MESOCYCLE.name}
                 </Text>
               </HStack>
 
               <VStack space={2}>
-                <Text variant="display" className="text-ember-50">
+                <Text variant="display" className="text-forest-50">
                   {planDay.name.toUpperCase()}
                 </Text>
                 <Text variant="bodySmall" className="text-text-secondary">

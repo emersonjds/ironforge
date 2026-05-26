@@ -22,6 +22,7 @@ const LEVEL_LABEL: Record<string, string> = {
 
 export default function ProfileScreen() {
   const user = useAuthStore((s) => s.user);
+  const athleteProfile = useAuthStore((s) => s.athleteProfile);
   const signOut = useAuthStore((s) => s.signOut);
 
   function confirmSignOut() {
@@ -58,8 +59,8 @@ export default function ProfileScreen() {
         {/* Avatar card */}
         <Card variant="raised" padding="xl">
           <HStack space={5} align="center">
-            <View className="w-16 h-16 rounded-full bg-ember-500/15 border-2 border-ember-500/60 items-center justify-center">
-              <Text className="text-xl font-bold text-ember-400">{initials}</Text>
+            <View className="w-16 h-16 rounded-full bg-forest-500/15 border-2 border-forest-500/60 items-center justify-center">
+              <Text className="text-xl font-bold text-forest-400">{initials}</Text>
             </View>
             <VStack space={1} className="flex-1">
               <Text className="text-lg font-bold text-text-primary">{user?.displayName ?? "—"}</Text>
@@ -72,11 +73,11 @@ export default function ProfileScreen() {
         <Card variant="raised" padding="none">
           <View className="px-5 pt-5 pb-3">
             <Text variant="label" className="mb-4">TREINO</Text>
-            <Row label="Objetivo" value={GOAL_LABEL[user?.goal ?? "hypertrophy"] ?? "—"} />
+            <Row label="Objetivo" value={GOAL_LABEL[athleteProfile?.goal ?? "hypertrophy"] ?? "—"} />
             <Divider className="my-2" />
-            <Row label="Nível" value={LEVEL_LABEL[user?.experienceLevel ?? "intermediate"] ?? "—"} />
+            <Row label="Nível" value={LEVEL_LABEL[athleteProfile?.experienceLevel ?? "intermediate"] ?? "—"} />
             <Divider className="my-2" />
-            <Row label="Unidade" value={user?.unitSystem?.toUpperCase() ?? "KG"} />
+            <Row label="Unidade" value={athleteProfile?.unitSystem?.toUpperCase() ?? "KG"} />
           </View>
         </Card>
 

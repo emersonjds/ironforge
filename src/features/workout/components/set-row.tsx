@@ -63,11 +63,11 @@ export function SetRow({
       <Animated.View
         pointerEvents="none"
         style={ringStyle}
-        className="absolute inset-0 rounded-lg border-2 border-ember-500"
+        className="absolute inset-0 rounded-lg border-2 border-forest-500"
       />
       <View className="flex-row items-center px-3 h-14">
         <Text
-          className={`w-8 text-xs font-bold ${status === "active" ? "text-ember-400" : "text-text-tertiary"}`}
+          className={`w-8 text-xs font-bold ${status === "active" ? "text-forest-400" : "text-text-tertiary"}`}
         >
           {index}
         </Text>
@@ -113,7 +113,7 @@ export function SetRow({
               <Text className="text-text-inverse text-xs font-bold">✓</Text>
             </View>
           ) : status === "active" ? (
-            <View className="w-6 h-6 rounded-full border-2 border-ember-500" />
+            <View className="w-6 h-6 rounded-full border-2 border-forest-500" />
           ) : (
             <View className="w-6 h-6 rounded-full border border-border-subtle" />
           )}

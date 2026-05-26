@@ -21,7 +21,9 @@ export function WorkoutSummaryScreen() {
 
   const deltas = useMemo<ExerciseDelta[]>(() => {
     if (!session) return [];
-    const planDay = SEED_MESOCYCLE.days.find((d) => d.id === session.planDayId);
+    const planDay = session.planDayId
+      ? SEED_MESOCYCLE.days.find((d) => d.id === session.planDayId)
+      : undefined;
     if (!planDay) return [];
     return planDay.exercises.map((pe) =>
       deltaVsPrevious({
@@ -77,13 +79,13 @@ export function WorkoutSummaryScreen() {
             <VStack space={0}>
               {deltas.map((d, i) => {
                 const exercise = (() => {
-                  const pe = planDay?.exercises.find((p) => p.id === d.planExerciseId);
+                  const pe = planDay?.exercises.find((p) => p.id === d.exerciseId);
                   return pe ? getExercise(pe.exerciseId) : undefined;
                 })();
-                const hasSets = session.sets.some((s) => s.planExerciseId === d.planExerciseId);
+                const hasSets = session.sets.some((s) => s.planExerciseId === d.exerciseId);
                 const isLast = i === deltas.length - 1;
                 return (
-                  <View key={d.planExerciseId}>
+                  <View key={d.exerciseId}>
                     <HStack justify="between" align="center" className="px-5 py-4">
                       <Text className="text-sm text-text-primary flex-1 mr-4">
                         {exercise?.name ?? "—"}
