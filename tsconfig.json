@@ -6,11 +6,13 @@
     "paths": {
       "@/*": ["./src/*"],
       "@app/*": ["./app/*"],
+      "@widgets/*": ["./src/widgets/*"],
       "@features/*": ["./src/features/*"],
-      "@ui/*": ["./src/components/ui/*"],
-      "@shared/*": ["./src/components/shared/*"],
-      "@theme/*": ["./src/theme/*"],
-      "@lib/*": ["./src/lib/*"],
+      "@entities/*": ["./src/entities/*"],
+      "@shared/*": ["./src/shared/*"],
+      "@ui/*": ["./src/shared/ui/*"],
+      "@lib/*": ["./src/shared/lib/*"],
+      "@theme/*": ["./src/shared/theme/*"],
       "@types/*": ["./src/types/*"]
     }
   },
