@@ -11,18 +11,26 @@ cssInterop(Pressable, { className: "style" });
 cssInterop(View, { className: "style" });
 
 type IoniconName = keyof typeof Ionicons.glyphMap;
+export interface TabConfig {
+  label: string;
+  icon: IoniconName;
+  iconActive: IoniconName;
+}
 
-const TABS: Record<string, { label: string; icon: IoniconName; iconActive: IoniconName }> = {
+export const ATHLETE_TABS: Record<string, TabConfig> = {
   index: { label: "Início", icon: "home-outline", iconActive: "home" },
   workouts: { label: "Treinos", icon: "barbell-outline", iconActive: "barbell" },
   progress: { label: "Progresso", icon: "stats-chart-outline", iconActive: "stats-chart" },
-  profile: { label: "Perfil", icon: "person-outline", iconActive: "person" },
+  reels: { label: "Reels", icon: "play-circle-outline", iconActive: "play-circle" },
 };
 
-export function TabBar({ state, navigation }: BottomTabBarProps) {
+interface TabBarProps extends BottomTabBarProps {
+  config?: Record<string, TabConfig>;
+}
+
+export function TabBar({ state, navigation, config = ATHLETE_TABS }: TabBarProps) {
   const insets = useSafeAreaInsets();
-  // só as rotas que têm config de tab (history fica oculta)
-  const tabRoutes = state.routes.filter((r) => TABS[r.name]);
+  const tabRoutes = state.routes.filter((r) => config[r.name]);
 
   return (
     <View
@@ -32,7 +40,7 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
       {tabRoutes.map((route) => {
         const realIndex = state.routes.findIndex((r) => r.key === route.key);
         const isFocused = state.index === realIndex;
-        const meta = TABS[route.name]!;
+        const meta = config[route.name]!;
 
         function onPress() {
           const event = navigation.emit({

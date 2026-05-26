@@ -14,8 +14,9 @@ export default function AppLayout() {
       <Tabs.Screen name="index" />
       <Tabs.Screen name="workouts" />
       <Tabs.Screen name="progress" />
-      <Tabs.Screen name="profile" />
-      {/* rotas navegáveis fora da tab bar */}
+      <Tabs.Screen name="reels" />
+      {/* rotas navegáveis fora da tab bar (perfil via avatar do header) */}
+      <Tabs.Screen name="profile" options={{ href: null }} />
       <Tabs.Screen name="history" options={{ href: null }} />
       <Tabs.Screen name="notifications" options={{ href: null }} />
     </Tabs>
