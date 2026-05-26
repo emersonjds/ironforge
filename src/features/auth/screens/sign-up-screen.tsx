@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Pressable, View } from "react-native";
-import { router } from "expo-router";
+import { ActivityIndicator, Pressable, View } from "react-native";
+import { Link, router } from "expo-router";
 import { cssInterop } from "nativewind";
-import { Screen, VStack, Text, Button, Input } from "@ui/index";
+import { Screen, VStack, HStack, Text, Button, Input, Logo } from "@ui/index";
+import { PasswordStrengthBar } from "../components/password-strength-bar";
 import { useAuthStore } from "../store";
 
 cssInterop(Pressable, { className: "style" });
@@ -13,11 +14,15 @@ export function SignUpScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const signIn = useAuthStore((s) => s.signIn);
+
+  const canSubmit = !!name && !!email && password.length >= 8 && !loading;
 
   async function handleSignUp() {
     setLoading(true);
-    // TODO: real signup via features/auth/api.ts
+    setError(null);
+    // TODO: signup real via features/auth/api.ts
     await new Promise((r) => setTimeout(r, 500));
     signIn(
       {
@@ -46,55 +51,94 @@ export function SignUpScreen() {
 
   return (
     <Screen>
-      <VStack space={10} className="flex-1 pt-8">
-        {/* Back nav */}
-        <Pressable onPress={() => router.back()} className="self-start -ml-1 h-11 px-1 justify-center">
+      <VStack space={8} className="flex-1 pt-4">
+        <Pressable
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="Voltar"
+          className="self-start -ml-1 h-11 px-1 justify-center"
+        >
           <Text className="text-text-secondary text-base">← voltar</Text>
         </Pressable>
 
-        <VStack space={6} className="flex-1 justify-center">
+        <VStack space={6} className="flex-1">
+          <HStack space={3} align="center">
+            <Logo size={48} />
+            <Text className="font-display text-xl font-bold text-text-primary tracking-tight">
+              IRONFORGE
+            </Text>
+          </HStack>
+
           <VStack space={2}>
-            <Text variant="title">Criar conta</Text>
+            <Text variant="title">Crie sua conta.</Text>
             <Text variant="bodySmall">Leva 2 minutos. Sem cartão.</Text>
           </VStack>
 
-          <View className="pt-2">
-            <VStack space={5}>
-              <Input
-                label="Nome"
-                placeholder="Como quer ser chamado"
-                autoCapitalize="words"
-                value={name}
-                onChangeText={setName}
-              />
-              <Input
-                label="Email"
-                placeholder="voce@exemplo.com"
-                autoCapitalize="none"
-                keyboardType="email-address"
-                value={email}
-                onChangeText={setEmail}
-              />
+          <VStack space={5} className="pt-1">
+            <Input
+              label="Como quer ser chamado"
+              placeholder="Seu primeiro nome"
+              autoCapitalize="words"
+              autoComplete="name"
+              textContentType="name"
+              returnKeyType="next"
+              value={name}
+              onChangeText={setName}
+            />
+            <Input
+              label="Email"
+              placeholder="voce@exemplo.com"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoComplete="email"
+              textContentType="emailAddress"
+              returnKeyType="next"
+              value={email}
+              onChangeText={setEmail}
+            />
+            <VStack space={2}>
               <Input
                 label="Senha"
-                placeholder="mínimo 8 caracteres"
+                placeholder="••••••••"
                 secureTextEntry
+                autoComplete="new-password"
+                textContentType="newPassword"
+                returnKeyType="done"
+                hint={password.length === 0 ? "mínimo 8 caracteres" : undefined}
                 value={password}
                 onChangeText={setPassword}
               />
+              <PasswordStrengthBar password={password} />
             </VStack>
-          </View>
+          </VStack>
 
-          <View className="pt-4">
-            <Button
-              label={loading ? "Criando conta..." : "CRIAR CONTA"}
-              variant="solid"
-              size="xl"
-              fullWidth
-              disabled={loading || !name || !email || password.length < 8}
-              onPress={handleSignUp}
-            />
-          </View>
+          {error ? (
+            <View
+              accessibilityLiveRegion="polite"
+              className="bg-error-muted border-l-2 border-error rounded-xs px-4 py-3"
+            >
+              <Text className="text-error text-sm">{error}</Text>
+            </View>
+          ) : null}
+
+          <Button
+            label={loading ? "Criando conta..." : "CRIAR CONTA"}
+            variant="solid"
+            size="xl"
+            fullWidth
+            className="mt-1"
+            disabled={!canSubmit}
+            onPress={handleSignUp}
+            leading={loading ? <ActivityIndicator size="small" color="#FFFFFF" /> : undefined}
+          />
+
+          <Link href="/(auth)/sign-in" asChild>
+            <Pressable accessibilityRole="link" className="self-center h-11 justify-center">
+              <Text className="text-sm text-text-secondary text-center">
+                Já tem conta? <Text className="text-forest-500 font-semibold">Entrar</Text>
+              </Text>
+            </Pressable>
+          </Link>
         </VStack>
       </VStack>
     </Screen>
