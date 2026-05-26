@@ -1,132 +1,70 @@
-import { z } from "zod";
+/**
+ * Fachada pública do domínio v2.
+ * Cada entidade vive em src/entities/<name>/schema.ts.
+ * Este arquivo reexporta tudo para não quebrar imports existentes
+ * enquanto a migração incremental de imports ocorre.
+ */
 
-export const MuscleSchema = z.enum([
-  "chest",
-  "back_lats",
-  "back_upper",
-  "back_lower",
-  "quads",
-  "hamstrings",
-  "glutes",
-  "calves",
-  "shoulders_front",
-  "shoulders_side",
-  "shoulders_rear",
-  "biceps",
-  "triceps",
-  "forearms",
-  "core",
-]);
-export type Muscle = z.infer<typeof MuscleSchema>;
+// Enums compartilhados
+export {
+  MuscleSchema,
+  EquipmentSchema,
+  MovementPatternSchema,
+  SetTypeSchema,
+  MuscleEmphasisSchema,
+  ExperienceSchema,
+  GoalSchema,
+  UnitSystemSchema,
+  PerformerGenderSchema,
+} from "./enums";
+export type {
+  Muscle,
+  Equipment,
+  MovementPattern,
+  SetType,
+  MuscleEmphasis,
+  Experience,
+  Goal,
+  UnitSystem,
+  PerformerGender,
+} from "./enums";
 
-export const EquipmentSchema = z.enum([
-  "barbell",
-  "dumbbell",
-  "machine",
-  "cable",
-  "bodyweight",
-  "kettlebell",
-  "smith",
-]);
-export type Equipment = z.infer<typeof EquipmentSchema>;
+// Identidade
+export { UserSchema } from "./user";
+export type { User } from "./user";
 
-export const MovementPatternSchema = z.enum([
-  "push_h",
-  "push_v",
-  "pull_h",
-  "pull_v",
-  "squat",
-  "hinge",
-  "lunge",
-  "carry",
-  "isolation",
-]);
-export type MovementPattern = z.infer<typeof MovementPatternSchema>;
+// Perfis
+export { AthleteProfileSchema } from "@/entities/athlete/schema";
+export type { AthleteProfile } from "@/entities/athlete/schema";
+export { CoachProfileSchema, CoachAthleteRelationSchema } from "@/entities/coach/schema";
+export type { CoachProfile, CoachAthleteRelation } from "@/entities/coach/schema";
 
-export const ExerciseSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  primaryMuscle: MuscleSchema,
-  secondaryMuscles: z.array(MuscleSchema).default([]),
-  equipment: EquipmentSchema,
-  movementPattern: MovementPatternSchema,
-  isUnilateral: z.boolean().default(false),
-});
-export type Exercise = z.infer<typeof ExerciseSchema>;
+// Exercício e vídeo
+export { ExerciseSchema } from "@/entities/exercise/schema";
+export type { Exercise } from "@/entities/exercise/schema";
+export { VideoSchema, ExerciseDemoSchema } from "@/entities/video/schema";
+export type { Video, ExerciseDemo } from "@/entities/video/schema";
 
-export const SetTypeSchema = z.enum(["warmup", "working", "backoff", "dropset", "myorep"]);
-export type SetType = z.infer<typeof SetTypeSchema>;
+// Planos
+export {
+  PlanExerciseSchema,
+  PlanDaySchema,
+  PlanTemplateSchema,
+  WeekConfigSchema,
+  AssignedPlanSchema,
+} from "@/entities/plan/schema";
+export type {
+  PlanExercise,
+  PlanDay,
+  PlanTemplate,
+  WeekConfig,
+  AssignedPlan,
+} from "@/entities/plan/schema";
 
-export const SetLogSchema = z.object({
-  id: z.string(),
-  sessionId: z.string(),
-  planExerciseId: z.string(),
-  setIndex: z.number().int().min(1),
-  type: SetTypeSchema.default("working"),
-  weight: z.number().min(0).multipleOf(0.5),
-  reps: z.number().int().min(0),
-  rir: z.number().int().min(0).max(10).nullable(),
-  restTakenSeconds: z.number().int().min(0).nullable(),
-  completedAt: z.string().datetime(),
-  notes: z.string().max(500).nullable(),
-  syncedAt: z.string().datetime().nullable(),
-});
-export type SetLog = z.infer<typeof SetLogSchema>;
+// Sessão e sets
+export { SessionSchema, SetLogSchema } from "@/entities/session/schema";
+export type { Session, SetLog } from "@/entities/session/schema";
 
-export const PlanExerciseSchema = z.object({
-  id: z.string(),
-  planDayId: z.string(),
-  exerciseId: z.string(),
-  order: z.number().int().min(0),
-  targetSets: z.number().int().min(1).max(20),
-  repRangeMin: z.number().int().min(1),
-  repRangeMax: z.number().int().min(1),
-  restSeconds: z.number().int().min(30),
-  targetRir: z.number().int().min(0).max(5),
-  isSupersetWith: z.string().nullable().default(null),
-});
-export type PlanExercise = z.infer<typeof PlanExerciseSchema>;
-
-export const PlanDaySchema = z.object({
-  id: z.string(),
-  mesocycleId: z.string(),
-  dayIndex: z.number().int().min(1).max(7),
-  name: z.string(),
-  exercises: z.array(PlanExerciseSchema).default([]),
-});
-export type PlanDay = z.infer<typeof PlanDaySchema>;
-
-export const MesocycleSchema = z.object({
-  id: z.string(),
-  userId: z.string(),
-  name: z.string(),
-  weeks: z.number().int().min(1).max(16),
-  startDate: z.string().datetime(),
-  status: z.enum(["active", "archived", "completed"]),
-  days: z.array(PlanDaySchema).default([]),
-});
-export type Mesocycle = z.infer<typeof MesocycleSchema>;
-
-export const SessionSchema = z.object({
-  id: z.string(),
-  userId: z.string(),
-  planDayId: z.string(),
-  startedAt: z.string().datetime(),
-  endedAt: z.string().datetime().nullable(),
-  bodyweightAtSession: z.number().min(0).nullable(),
-  notes: z.string().max(1000).nullable(),
-  perceivedFatigue: z.number().int().min(1).max(10).nullable(),
-  sets: z.array(SetLogSchema).default([]),
-});
-export type Session = z.infer<typeof SessionSchema>;
-
-export const UserSchema = z.object({
-  id: z.string(),
-  email: z.string().email(),
-  displayName: z.string(),
-  unitSystem: z.enum(["kg", "lb"]).default("kg"),
-  experienceLevel: z.enum(["beginner", "intermediate", "advanced"]).default("intermediate"),
-  goal: z.enum(["hypertrophy", "strength", "cutting", "recomp"]).default("hypertrophy"),
-  onboardingCompleted: z.boolean().default(false),
-});
-export type User = z.infer<typeof UserSchema>;
+// Histórico de carga
+export { LoadHistoryEntrySchema, AdaptationLogSchema, withoutDeleted } from "@/entities/load-history/schema";
+export type { LoadHistoryEntry, AdaptationLog } from "@/entities/load-history/schema";
