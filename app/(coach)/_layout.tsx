@@ -1,16 +1,22 @@
-import { Stack } from "expo-router";
-import { colors } from "@theme/colors";
+import { Tabs } from "expo-router";
+import { TabBar, type TabConfig } from "@shared/tab-bar";
+
+const COACH_TABS: Record<string, TabConfig> = {
+  index: { label: "Alunos", icon: "people-outline", iconActive: "people" },
+  financeiro: { label: "Financeiro", icon: "card-outline", iconActive: "card" },
+  perfil: { label: "Perfil", icon: "person-outline", iconActive: "person" },
+};
 
 export default function CoachLayout() {
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: colors.bg.DEFAULT },
-      }}
+    <Tabs
+      tabBar={(props) => <TabBar {...props} config={COACH_TABS} />}
+      screenOptions={{ headerShown: false }}
     >
-      <Stack.Screen name="index" />
-      <Stack.Screen name="student/[id]" />
-    </Stack>
+      <Tabs.Screen name="index" />
+      <Tabs.Screen name="financeiro" />
+      <Tabs.Screen name="perfil" />
+      <Tabs.Screen name="student/[id]" options={{ href: null }} />
+    </Tabs>
   );
 }

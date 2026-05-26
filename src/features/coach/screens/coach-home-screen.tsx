@@ -1,11 +1,10 @@
-import { ScrollView, View, Pressable, Alert } from "react-native";
+import { ScrollView, View, Pressable } from "react-native";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { cssInterop } from "nativewind";
 import { router } from "expo-router";
 import { Screen, VStack, HStack, Text, Card, AppHeader } from "@ui/index";
 import { colors } from "@theme/colors";
-import { useAuthStore } from "@features/auth/store";
 import { mockCoachName, mockStudents, type CoachStudent } from "@shared/mocks";
 
 cssInterop(ScrollView, { className: "style" });
@@ -13,37 +12,32 @@ cssInterop(View, { className: "style" });
 cssInterop(Pressable, { className: "style" });
 
 export function CoachHomeScreen() {
-  const signOut = useAuthStore((s) => s.signOut);
   const trainedToday = mockStudents.filter((s) => s.daysSinceLastSession === 0).length;
   const inactive = mockStudents.filter((s) => s.daysSinceLastSession >= 3).length;
-
-  function confirmSignOut() {
-    Alert.alert("Sair da conta?", "Você precisará entrar novamente.", [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: "Sair",
-        style: "destructive",
-        onPress: () => {
-          signOut();
-          router.replace("/(auth)/welcome");
-        },
-      },
-    ]);
-  }
+  const active = mockStudents.length - inactive;
 
   return (
     <Screen edges={["top"]} padded={false}>
-      <AppHeader hasNotifications onPressBell={confirmSignOut} />
+      <AppHeader showBell={false} />
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View className="px-5 pt-1 pb-12">
+        <View className="px-5 pt-1 pb-28">
           <VStack space={5}>
             <VStack space={1}>
               <Text variant="title">Olá, {mockCoachName}</Text>
-              <Text variant="bodySmall">
-                {mockStudents.length} alunos · {trainedToday} treinaram hoje
-                {inactive > 0 ? ` · ${inactive} sumido${inactive > 1 ? "s" : ""}` : ""}
-              </Text>
+              <Text variant="bodySmall">Acompanhe sua turma de relance.</Text>
             </VStack>
+
+            {/* Visão geral da turma */}
+            <HStack space={3}>
+              <OverviewStat label="Ativos" value={String(active)} icon="flame-outline" tone="forest" />
+              <OverviewStat label="Treinaram hoje" value={String(trainedToday)} icon="checkmark-circle-outline" tone="forest" />
+              <OverviewStat
+                label="Sumidos"
+                value={String(inactive)}
+                icon="alert-circle-outline"
+                tone={inactive > 0 ? "warning" : "forest"}
+              />
+            </HStack>
 
             <VStack space={3}>
               <Text variant="label">Seus alunos</Text>
@@ -55,6 +49,29 @@ export function CoachHomeScreen() {
         </View>
       </ScrollView>
     </Screen>
+  );
+}
+
+function OverviewStat({
+  label,
+  value,
+  icon,
+  tone,
+}: {
+  label: string;
+  value: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  tone: "forest" | "warning";
+}) {
+  const color = tone === "warning" ? colors.warning : colors.forest[500];
+  return (
+    <Card variant="sunken" padding="md" className="flex-1">
+      <VStack space={2}>
+        <Ionicons name={icon} size={18} color={color} />
+        <Text className="font-display text-2xl font-black text-text-primary leading-none">{value}</Text>
+        <Text variant="caption" className="normal-case tracking-normal">{label}</Text>
+      </VStack>
+    </Card>
   );
 }
 
