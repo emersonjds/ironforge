@@ -230,23 +230,28 @@ export function CoachStudentScreen() {
 function AdherenceBars({ weeks, goal }: { weeks: number[]; goal: number }) {
   const max = Math.max(goal, ...weeks, 1);
   return (
-    <HStack space={2} align="end" className="h-24">
-      {weeks.map((w, i) => {
-        const pct = (w / max) * 100;
-        const hit = w >= goal;
-        const isLast = i === weeks.length - 1;
-        return (
-          <VStack key={i} space={2} align="center" className="flex-1">
-            <View className="w-full justify-end items-center" style={{ height: 80 }}>
-              <View
-                className={`w-full rounded-md ${hit ? "bg-forest-500" : isLast ? "bg-warning" : "bg-forest-100"}`}
-                style={{ height: `${Math.max(pct, 6)}%` }}
-              />
-            </View>
-            <Text className="text-2xs text-text-tertiary">{w}</Text>
-          </VStack>
-        );
-      })}
-    </HStack>
+    <View>
+      <View className="flex-row items-end gap-2" style={{ height: 72 }}>
+        {weeks.map((w, i) => {
+          const pct = (w / max) * 100;
+          const hit = w >= goal;
+          const isLast = i === weeks.length - 1;
+          return (
+            <View
+              key={i}
+              className={`flex-1 rounded-md ${hit ? "bg-forest-500" : isLast ? "bg-warning" : "bg-forest-100"}`}
+              style={{ height: `${Math.max(pct, 8)}%` }}
+            />
+          );
+        })}
+      </View>
+      <View className="flex-row gap-2 mt-2">
+        {weeks.map((w, i) => (
+          <Text key={i} className="flex-1 text-center text-2xs text-text-tertiary">
+            {w}
+          </Text>
+        ))}
+      </View>
+    </View>
   );
 }

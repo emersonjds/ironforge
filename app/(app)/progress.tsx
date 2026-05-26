@@ -63,23 +63,28 @@ export default function ProgressScreen() {
                 </HStack>
 
                 {/* mini gráfico de barras */}
-                <HStack space={2} align="end" className="h-28">
-                  {mockBodyWeightSeries.map((p) => {
-                    const h = ((p.kg - min) / (max - min)) * 100;
-                    const isLast = p.month === current.month;
-                    return (
-                      <VStack key={p.month} space={2} align="center" className="flex-1">
-                        <View className="w-full justify-end items-center" style={{ height: 96 }}>
-                          <View
-                            className={`w-full rounded-md ${isLast ? "bg-forest-500" : "bg-forest-100"}`}
-                            style={{ height: `${Math.max(h, 6)}%` }}
-                          />
-                        </View>
-                        <Text className="text-2xs text-text-tertiary">{p.month}</Text>
-                      </VStack>
-                    );
-                  })}
-                </HStack>
+                <View>
+                  <View className="flex-row items-end gap-2" style={{ height: 96 }}>
+                    {mockBodyWeightSeries.map((p) => {
+                      const h = ((p.kg - min) / (max - min)) * 100;
+                      const isLast = p.month === current.month;
+                      return (
+                        <View
+                          key={p.month}
+                          className={`flex-1 rounded-md ${isLast ? "bg-forest-500" : "bg-forest-100"}`}
+                          style={{ height: `${Math.max(h, 8)}%` }}
+                        />
+                      );
+                    })}
+                  </View>
+                  <View className="flex-row gap-2 mt-2">
+                    {mockBodyWeightSeries.map((p) => (
+                      <Text key={p.month} className="flex-1 text-center text-2xs text-text-tertiary">
+                        {p.month}
+                      </Text>
+                    ))}
+                  </View>
+                </View>
               </VStack>
             </Card>
 
