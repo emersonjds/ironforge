@@ -427,7 +427,7 @@ export default function RootLayout() {
 6. Root `_layout.tsx` com providers.
 
 ### Fase 1 — UI primitives + Auth (2-3 dias)
-1. `src/components/ui/*` — Button, Text, Input, Card, Sheet, Skeleton, Chip, EmptyState. Cada um tipado, NativeWind por baixo, dark-first.
+1. `src/shared/ui/*` — Button, Text, Input, Card, Sheet, Skeleton, Chip, EmptyState. Cada um tipado, NativeWind por baixo, light-first (Forest Minimalist).
 2. `(auth)` stack com Welcome, SignIn, SignUp (UI completa, mock de auth).
 3. `features/auth/store.ts` + `useCurrentUser` hook.
 4. `AuthGate` no root layout.
