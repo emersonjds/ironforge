@@ -13,10 +13,11 @@ export interface AppHeaderProps {
   avatarUrl?: string | null;
   hasNotifications?: boolean;
   onPressBell?: () => void;
+  onPressAvatar?: () => void;
 }
 
 /** Cabeçalho da plataforma: logo + wordmark à esquerda, sino (+ avatar) à direita. */
-export function AppHeader({ avatarUrl, hasNotifications, onPressBell }: AppHeaderProps) {
+export function AppHeader({ avatarUrl, hasNotifications, onPressBell, onPressAvatar }: AppHeaderProps) {
   return (
     <View className="flex-row items-center justify-between px-5 pt-2 pb-3">
       <View className="flex-row items-center gap-2">
@@ -41,12 +42,18 @@ export function AppHeader({ avatarUrl, hasNotifications, onPressBell }: AppHeade
         </Pressable>
 
         {avatarUrl ? (
-          <Image
-            source={{ uri: avatarUrl }}
-            style={{ width: 32, height: 32, borderRadius: 16 }}
-            contentFit="cover"
-            accessibilityLabel="Foto de perfil"
-          />
+          <Pressable
+            onPress={onPressAvatar}
+            hitSlop={6}
+            accessibilityRole="button"
+            accessibilityLabel="Abrir perfil"
+          >
+            <Image
+              source={{ uri: avatarUrl }}
+              style={{ width: 32, height: 32, borderRadius: 16 }}
+              contentFit="cover"
+            />
+          </Pressable>
         ) : null}
       </View>
     </View>
