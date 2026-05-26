@@ -202,7 +202,9 @@ export function NumericKeypadSheet({
               ) : null}
             </View>
             {field === "rir" ? (
-              <Text className="text-xs text-text-tertiary mt-1 uppercase tracking-widest">reps em reserva · 0 = falha</Text>
+              <Text className="text-xs text-text-tertiary mt-1 normal-case">
+                quantas reps ainda sobravam · 0 = foi até a falha
+              </Text>
             ) : null}
           </View>
 

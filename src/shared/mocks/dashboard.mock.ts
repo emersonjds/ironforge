@@ -65,4 +65,4 @@ export const mockUpcomingSessions: UpcomingSession[] = [
 ];
 
 export const mockReminder =
-  "Anotar o RIR de cada série é o que transforma o app em coaching real. Sem isso, só resta força bruta.";
+  "Depois de cada série, anote quantas repetições ainda sobravam no tanque. Essa “reserva” é o que mostra sua real evolução — não só o esforço do dia.";
