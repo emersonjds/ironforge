@@ -49,7 +49,7 @@ export function SignInScreen() {
     <Screen>
       <VStack space={8} className="flex-1 pt-4">
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => (router.canGoBack() ? router.back() : router.replace("/(auth)/welcome"))}
           accessibilityRole="button"
           accessibilityLabel="Voltar"
           className="self-start -ml-1 h-11 px-1 justify-center"
