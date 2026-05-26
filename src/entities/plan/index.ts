@@ -12,3 +12,5 @@ export type {
   WeekConfig,
   AssignedPlan,
 } from "./schema";
+export { resolveNextSession } from "./lib/resolve-next-session";
+export type { ResolvedSession } from "./lib/resolve-next-session";

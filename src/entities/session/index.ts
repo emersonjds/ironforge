@@ -11,3 +11,5 @@ export {
   deltaVsPrevious,
 } from "./lib/session-stats";
 export type { ExerciseDelta, SessionSummary } from "./lib/session-stats";
+export { buildConsistencyGrid } from "./lib/consistency-grid";
+export type { ConsistencyLevel } from "./lib/consistency-grid";
