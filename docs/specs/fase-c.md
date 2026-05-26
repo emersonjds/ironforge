@@ -1,6 +1,6 @@
 # Spec: Fase C — Ficha do Aluno + Carga Persistente
 
-> **Status:** em implementação · **Agentes:** po + coach + mobile-ui-ux-designer + mobile-dev-expert · **Lado:** mobile (aluno)
+> **Status:** ✅ implementado · **Agentes:** po + coach + mobile-ui-ux-designer + mobile-dev-expert · **Lado:** mobile (aluno)
 > **Branch:** `feat/domain-v2` · **Specs relacionadas:** `06-platform-spec.md §4,10,13`, `07-data-model-v2.md §LoadHistory`
 
 ## Contexto
@@ -65,9 +65,9 @@ Com o domínio v2 (Fase A) e o vínculo coach↔atleta (Fase B), a Fase C fecha 
 - Supervisão em tempo real (Fase H)
 
 ## Critérios de aceite (gate PO)
-- [ ] `resolveNextSession` com testes: plano 1/2/4 dias, semana completa (reinício), sem plano (null)
-- [ ] Home mostra `PlanDay` correto do `SEED_PLAN` (não `mockTodayHero`)
-- [ ] Logger exibe sugestão de carga para exercícios com histórico
-- [ ] `LoadHistoryEntry` persiste após kill do app
-- [ ] Consistency grid mostra sessões reais completadas
-- [ ] `typecheck` + `lint` verdes
+- [x] `resolveNextSession` com testes: plano 1/2/4 dias, semana completa (reinício), sem plano (null)
+- [x] Home mostra `PlanDay` correto do `SEED_PLAN` (não `mockTodayHero`)
+- [x] Logger exibe sugestão de carga para exercícios com histórico
+- [x] `LoadHistoryEntry` persiste após kill do app
+- [x] Consistency grid mostra sessões reais completadas
+- [x] `typecheck` + `lint` verdes

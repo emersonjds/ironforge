@@ -1,6 +1,6 @@
 # Spec: Fase B — Vínculo Personal↔Aluno + Onboarding
 
-> **Status:** em implementação · **Agentes:** po + coach + mobile-ui-ux-designer + mobile-dev-expert · **Lado:** mobile (aluno)
+> **Status:** ✅ implementado · **Agentes:** po + coach + mobile-ui-ux-designer + mobile-dev-expert · **Lado:** mobile (aluno)
 > **Branch:** `feat/domain-v2` · **Specs relacionadas:** `06-platform-spec.md §1,12`, `07-data-model-v2.md §Identidade`
 
 ## Contexto
@@ -47,11 +47,11 @@ Fase A entregou o domínio v2 completo (schemas Zod, FSD-lite, 38 testes verdes)
 - `riskFlags` vs `restrictions` alertas no logger
 
 ## Critérios de aceite
-- [ ] Tela `invite.tsx` carrega coach mock via token, aceita/rejeita e navega corretamente
-- [ ] `goal.tsx` coleta 3 campos (experiência, objetivo, unidade) sem chamar `completeOnboarding`
-- [ ] `restrictions.tsx` recebe draft, adiciona `bodyweightKg + restrictions`, chama `completeOnboarding` → vai para `/(app)`
-- [ ] `hasCompletedOnboarding=false` + `role=athlete` → vai para `/(onboarding)/goal`
-- [ ] `typecheck` verde
+- [x] Tela `invite.tsx` carrega coach mock via token, aceita/rejeita e navega corretamente
+- [x] `goal.tsx` coleta 3 campos (experiência, objetivo, unidade) sem chamar `completeOnboarding`
+- [x] `restrictions.tsx` recebe draft, adiciona `bodyweightKg + restrictions`, chama `completeOnboarding` → vai para `/(app)`
+- [x] `hasCompletedOnboarding=false` + `role=athlete` → vai para `/(onboarding)/goal`
+- [x] `typecheck` verde
 
 ## Telas / fluxo
 ```
