@@ -15,8 +15,9 @@ export default function AppLayout() {
       <Tabs.Screen name="workouts" />
       <Tabs.Screen name="progress" />
       <Tabs.Screen name="profile" />
-      {/* histórico continua navegável, mas fora da tab bar */}
+      {/* rotas navegáveis fora da tab bar */}
       <Tabs.Screen name="history" options={{ href: null }} />
+      <Tabs.Screen name="notifications" options={{ href: null }} />
     </Tabs>
   );
 }
