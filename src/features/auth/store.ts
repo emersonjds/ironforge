@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { STORAGE_KEYS } from "@shared/lib/storage/keys";
+import { mockRelation } from "@shared/mocks";
 import type { User } from "@/types/domain";
 import type { AthleteProfile } from "@/types/domain";
 
@@ -51,7 +52,7 @@ export const useAuthStore = create<AuthState>()(
       signIn: (user, token, athleteProfile, role = "athlete") => {
         const profile: AthleteProfile = athleteProfile ?? {
           userId: user.id,
-          coachId: null,
+          coachId: role === "athlete" ? mockRelation.coachId : null,
           ...DEFAULT_ATHLETE_PROFILE,
         };
         set({
