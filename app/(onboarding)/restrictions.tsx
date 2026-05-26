@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pressable, View, ScrollView } from "react-native";
+import { Pressable, View, ScrollView, TextInput, KeyboardAvoidingView, Platform } from "react-native";
 import { cssInterop } from "nativewind";
 import { router } from "expo-router";
 import { Screen, VStack, HStack, Text, Button, Card } from "@ui/index";
@@ -33,6 +33,7 @@ export default function OnboardingRestrictions() {
   const completeOnboarding = useAuthStore((s) => s.completeOnboarding);
   const { goal, experienceLevel, unitSystem, reset } = useOnboardingDraftStore();
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bodyweightInput, setBodyweightInput] = useState("");
   const [saving, setSaving] = useState(false);
 
   function toggle(value: string) {
@@ -46,10 +47,13 @@ export default function OnboardingRestrictions() {
 
   async function handleComplete() {
     setSaving(true);
+    const parsed = parseFloat(bodyweightInput.replace(",", "."));
+    const bodyweightKg = !isNaN(parsed) && parsed > 0 ? parsed : null;
     completeOnboarding({
       goal: goal ?? "hypertrophy",
       experienceLevel: experienceLevel ?? "intermediate",
       unitSystem: unitSystem,
+      bodyweightKg,
       restrictions: Array.from(selected),
       onboardingCompleted: true,
     });
@@ -58,10 +62,15 @@ export default function OnboardingRestrictions() {
   }
 
   return (
+    <KeyboardAvoidingView
+      className="flex-1"
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
     <Screen edges={["top", "bottom"]} padded={false}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerClassName="px-5 pt-8 pb-10"
+        keyboardShouldPersistTaps="handled"
       >
         <VStack space={8}>
           {/* Progress */}
@@ -78,8 +87,32 @@ export default function OnboardingRestrictions() {
           </VStack>
 
           <VStack space={1}>
-            <Text variant="title">Alguma restrição física?</Text>
-            <Text variant="bodySmall">Marque o que se aplica.</Text>
+            <Text variant="title">Mais alguns dados</Text>
+            <Text variant="bodySmall">Leva 30 segundos.</Text>
+          </VStack>
+
+          {/* Peso corporal */}
+          <VStack space={3}>
+            <Text className="text-2xs text-text-tertiary uppercase tracking-widest">
+              Peso corporal ({unitSystem})
+            </Text>
+            <View className="flex-row items-center bg-bg-raised border border-border rounded-xl px-4 h-14">
+              <TextInput
+                value={bodyweightInput}
+                onChangeText={setBodyweightInput}
+                placeholder={`Ex.: 80`}
+                placeholderTextColor={colors.text.tertiary}
+                keyboardType="decimal-pad"
+                returnKeyType="done"
+                className="flex-1 text-base text-text-primary font-semibold"
+                style={{ color: colors.text.primary }}
+                maxLength={6}
+              />
+              <Text className="text-sm text-text-tertiary ml-2">{unitSystem}</Text>
+            </View>
+            <Text className="text-2xs text-text-disabled -mt-1">
+              Opcional. Usado para calcular volume relativo ao seu peso.
+            </Text>
           </VStack>
 
           {/* Restriction list */}
@@ -135,5 +168,6 @@ export default function OnboardingRestrictions() {
         </VStack>
       </ScrollView>
     </Screen>
+    </KeyboardAvoidingView>
   );
 }
