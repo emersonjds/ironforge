@@ -43,6 +43,14 @@ Welcome → [Sou Aluno]   → SignIn/SignUp (role=athlete) → /(app)
 - Auth real / detecção de papel por perfil (handoff acima).
 - Push real de adesão (mock visual por ora).
 
+## Financeiro do professor (mock agora · gateway depois)
+**Modelo (PO):** MVP é **SaaS por faixa de alunos** (professor paga a plataforma; cobra o aluno) — MFit/Tecnofit/Fitfolio fazem assim. Take-rate/split entra só quando houver gateway. **Fintech-BR:** gateway alvo **Asaas** (subconta, cobrança recorrente PIX/cartão/boleto, split, saque PIX). O mobile **nunca processa pagamento — só exibe**.
+- **Tela Financeiro (mock):** saldo disponível + "Sacar via Pix"; **adiantamento de recebíveis** (antecipa o a-receber com taxa); **provisão de recebimentos** (agenda por período); **cobranças por aluno** (status pago/a vencer/atrasado, método, vencimento) + "gerar cobrança".
+- **Campos já no mock (1:1 com Asaas, zero retrabalho):** valores em **centavos**; `status: paid|pending|overdue`; `method: pix|credit_card|boleto`; bruto vs líquido vs taxa; `dueDate`; recorrência. Balance: `available/pending/receivedThisMonth`.
+- **Ativar aluno:** FSM `pending_payment → active → past_due → suspended → cancelled` (webhook confirma). No mock, ativação imediata.
+- **KYC** (CPF/MEI + chave Pix) acontece no onboarding do PSP, não no nosso backend — guardar só `gatewayAccountId` + `kycStatus` quando plugar.
+- **Web-only:** builder, cópia em massa, periodização, vídeo, dashboards ricos.
+
 ## Perguntas abertas
 1. Coach tab bar própria (Alunos / Avisos / Perfil) ou stack simples? (MVP: stack simples com Home + detalhe.)
 2. Coach que também é aluno (perfil duplo) — seletor de contexto: fora do MVP.
