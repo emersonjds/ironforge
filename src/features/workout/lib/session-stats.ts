@@ -1,87 +1,52 @@
-import type { Session, SetLog } from "@/types/domain";
-import { bestE1RM } from "./e1rm";
+/**
+ * Shim de compatibilidade — a lógica canônica vive em entities/session/lib/session-stats.ts.
+ * As telas que usam `planExerciseId` como chave ainda passam por aqui enquanto
+ * aguardam migração completa na Fase B.
+ */
+import {
+  sessionTotalVolume as _sessionTotalVolume,
+  sessionDurationSeconds as _sessionDurationSeconds,
+  sessionTopSetPerExercise as _sessionTopSetPerExercise,
+  deltaVsPrevious as _deltaVsPrevious,
+} from "@entities/session/lib/session-stats";
+import type { SetLog } from "@/types/domain";
 
-export interface ExerciseDelta {
-  planExerciseId: string;
-  currentBestWeight: number;
-  currentBestReps: number;
-  currentE1RM: number;
-  deltaKg: number | null;
-  deltaReps: number | null;
-  deltaE1RM: number | null;
-  status: "increase_weight" | "increase_reps" | "same" | "regression" | "first_time";
+export type { ExerciseDelta, SessionSummary } from "@entities/session/lib/session-stats";
+
+export interface LegacySession {
+  id: string;
+  startedAt: string;
+  endedAt: string | null;
+  sets: SetLog[];
+  planDayId: string | null;
+  athleteId: string;
+  assignedPlanId: string | null;
+  bodyweightKg: number | null;
+  perceivedFatigue: number | null;
+  notes: string | null;
+  syncedAt: string | null;
 }
 
-export function sessionTotalVolume(session: Session): number {
-  return session.sets.reduce((sum, s) => sum + s.weight * s.reps, 0);
+export function sessionTotalVolume(session: LegacySession): number {
+  return _sessionTotalVolume(session.sets);
 }
 
-export function sessionDurationSeconds(session: Session): number {
-  if (!session.endedAt) return 0;
-  return Math.floor(
-    (new Date(session.endedAt).getTime() - new Date(session.startedAt).getTime()) / 1000,
-  );
+export function sessionDurationSeconds(session: LegacySession): number {
+  return _sessionDurationSeconds(session.startedAt, session.endedAt);
 }
 
-export function sessionTopSetPerExercise(session: Session): Map<string, SetLog> {
-  const map = new Map<string, SetLog>();
-  for (const s of session.sets) {
-    const current = map.get(s.planExerciseId);
-    if (!current || s.weight * s.reps > current.weight * current.reps) {
-      map.set(s.planExerciseId, s);
-    }
-  }
-  return map;
+export function sessionTopSetPerExercise(session: LegacySession): Map<string, SetLog> {
+  return _sessionTopSetPerExercise(session.sets);
 }
 
 export function deltaVsPrevious(opts: {
   currentSets: readonly SetLog[];
   previousSets: readonly { weight: number; reps: number }[];
   planExerciseId: string;
-}): ExerciseDelta {
-  const { currentSets, previousSets, planExerciseId } = opts;
-  const current = currentSets.filter((s) => s.planExerciseId === planExerciseId);
-
-  const currentE1RM = bestE1RM(current.map((s) => ({ weight: s.weight, reps: s.reps })));
-  const topWeight = current.reduce((m, s) => Math.max(m, s.weight), 0);
-  const topWeightSet = current.find((s) => s.weight === topWeight);
-  const currentTopReps = topWeightSet?.reps ?? 0;
-
-  if (!previousSets.length) {
-    return {
-      planExerciseId,
-      currentBestWeight: topWeight,
-      currentBestReps: currentTopReps,
-      currentE1RM,
-      deltaKg: null,
-      deltaReps: null,
-      deltaE1RM: null,
-      status: "first_time",
-    };
-  }
-
-  const previousE1RM = bestE1RM(previousSets);
-  const previousTopWeight = previousSets.reduce((m, s) => Math.max(m, s.weight), 0);
-  const previousTopSet = previousSets.find((s) => s.weight === previousTopWeight);
-  const previousTopReps = previousTopSet?.reps ?? 0;
-
-  const deltaKg = topWeight - previousTopWeight;
-  const deltaReps = currentTopReps - previousTopReps;
-  const deltaE1RM = currentE1RM - previousE1RM;
-
-  let status: ExerciseDelta["status"] = "same";
-  if (deltaKg > 0) status = "increase_weight";
-  else if (deltaKg === 0 && deltaReps > 0) status = "increase_reps";
-  else if (deltaE1RM < -0.5) status = "regression";
-
-  return {
-    planExerciseId,
-    currentBestWeight: topWeight,
-    currentBestReps: currentTopReps,
-    currentE1RM,
-    deltaKg,
-    deltaReps,
-    deltaE1RM,
-    status,
-  };
+}) {
+  return _deltaVsPrevious({
+    currentSets: opts.currentSets,
+    previousSets: opts.previousSets,
+    exerciseId: opts.planExerciseId,
+  });
 }

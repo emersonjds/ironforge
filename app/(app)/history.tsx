@@ -33,7 +33,9 @@ export default function HistoryScreen() {
     );
   }
 
-  const planDay = SEED_MESOCYCLE.days.find((d) => d.id === lastSession.planDayId);
+  const planDay = lastSession.planDayId
+    ? SEED_MESOCYCLE.days.find((d) => d.id === lastSession.planDayId)
+    : undefined;
   const durationS = sessionDurationSeconds(lastSession);
   const totalVolume = sessionTotalVolume(lastSession);
   const date = new Date(lastSession.startedAt).toLocaleDateString("pt-BR", {

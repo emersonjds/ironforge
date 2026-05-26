@@ -5,7 +5,7 @@ import { SEED_MESOCYCLE } from "@features/plans/data/seed-plan";
 import { getExercise } from "@features/exercises/data/catalog";
 import { sessionTotalVolume, sessionDurationSeconds } from "@features/workout/lib/session-stats";
 import { formatDuration } from "@lib/utils/format";
-import type { Session } from "@/types/domain";
+import type { StoredSession } from "@features/workout/hooks/use-last-finished-session";
 
 cssInterop(Pressable, { className: "style" });
 cssInterop(View, { className: "style" });
@@ -13,7 +13,7 @@ cssInterop(ScrollView, { className: "style" });
 
 interface DaySessionSheetProps {
   visible: boolean;
-  session: Session | null;
+  session: StoredSession | null;
   dateLabel: string;
   onClose: () => void;
 }

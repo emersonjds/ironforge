@@ -20,7 +20,7 @@ export function WorkoutPreviewScreen() {
   const totalSets = planDay.exercises.reduce((sum, pe) => sum + pe.targetSets, 0);
 
   function handleStart() {
-    startSession(planDay, user?.id ?? "user-local");
+    startSession(planDay, user?.id ?? "user-local", undefined);
     router.replace("/(workout)/logger");
   }
 

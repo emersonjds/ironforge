@@ -86,6 +86,7 @@ export function WorkoutLoggerScreen() {
     setKeypadVisible(false);
     const logged = logSet({
       planExerciseId: planExercise.id,
+      exerciseId: planExercise.exerciseId,
       setIndex: activeSetIndex,
       weight: values.kg,
       reps: values.reps,

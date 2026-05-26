@@ -26,12 +26,21 @@ export function SignInScreen() {
         id: "mock-user-id",
         email,
         displayName: email.split("@")[0] ?? "lifter",
-        unitSystem: "kg",
-        experienceLevel: "intermediate",
-        goal: "hypertrophy",
-        onboardingCompleted: true,
+        avatarUrl: null,
+        createdAt: new Date().toISOString(),
       },
       "mock-token",
+      {
+        userId: "mock-user-id",
+        coachId: null,
+        goal: "hypertrophy",
+        experienceLevel: "intermediate",
+        unitSystem: "kg",
+        bodyweightKg: null,
+        restrictions: [],
+        videoPerformerPref: "any",
+        onboardingCompleted: true,
+      },
     );
     setLoading(false);
     router.replace("/(app)");

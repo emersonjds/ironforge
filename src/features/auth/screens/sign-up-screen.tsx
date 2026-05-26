@@ -24,12 +24,21 @@ export function SignUpScreen() {
         id: "mock-user-id",
         email,
         displayName: name,
-        unitSystem: "kg",
-        experienceLevel: "intermediate",
-        goal: "hypertrophy",
-        onboardingCompleted: false,
+        avatarUrl: null,
+        createdAt: new Date().toISOString(),
       },
       "mock-token",
+      {
+        userId: "mock-user-id",
+        coachId: null,
+        goal: "hypertrophy",
+        experienceLevel: "intermediate",
+        unitSystem: "kg",
+        bodyweightKg: null,
+        restrictions: [],
+        videoPerformerPref: "any",
+        onboardingCompleted: false,
+      },
     );
     setLoading(false);
     router.replace("/(onboarding)/goal");
