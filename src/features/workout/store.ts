@@ -2,6 +2,9 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { STORAGE_KEYS } from "@lib/storage/keys";
+import { SessionWithSetsSchema } from "@entities/session";
+import { PlanDaySchema } from "@entities/plan";
+import { withoutDeleted } from "@entities/load-history";
 import type { PlanDay, Session, SetLog } from "@/types/domain";
 
 function makeId(prefix: string): string {
@@ -10,6 +13,7 @@ function makeId(prefix: string): string {
 
 export interface DraftSetInput {
   planExerciseId: string;
+  exerciseId: string;
   setIndex: number;
   weight: number;
   reps: number;
@@ -18,18 +22,22 @@ export interface DraftSetInput {
   notes?: string | null;
 }
 
+interface SessionWithSets extends Session {
+  sets: SetLog[];
+}
+
 interface ActiveSessionState {
-  session: Session | null;
+  session: SessionWithSets | null;
   planDay: PlanDay | null;
   currentExerciseIndex: number;
 
-  startSession: (planDay: PlanDay, userId: string) => void;
+  startSession: (planDay: PlanDay, athleteId: string, assignedPlanId?: string) => void;
   logSet: (input: DraftSetInput) => SetLog;
   removeLastSet: (planExerciseId: string) => void;
   setExerciseIndex: (index: number) => void;
   nextExercise: () => void;
   prevExercise: () => void;
-  endSession: () => Session | null;
+  endSession: () => SessionWithSets | null;
   cancelSession: () => void;
 
   setsForExercise: (planExerciseId: string) => SetLog[];
@@ -42,16 +50,18 @@ export const useActiveSessionStore = create<ActiveSessionState>()(
       planDay: null,
       currentExerciseIndex: 0,
 
-      startSession: (planDay, userId) => {
-        const session: Session = {
+      startSession: (planDay, athleteId, assignedPlanId) => {
+        const session: SessionWithSets = {
           id: makeId("sess"),
-          userId,
+          athleteId,
+          assignedPlanId: assignedPlanId ?? null,
           planDayId: planDay.id,
           startedAt: new Date().toISOString(),
           endedAt: null,
-          bodyweightAtSession: null,
+          bodyweightKg: null,
           notes: null,
           perceivedFatigue: null,
+          syncedAt: null,
           sets: [],
         };
         set({ session, planDay, currentExerciseIndex: 0 });
@@ -63,7 +73,9 @@ export const useActiveSessionStore = create<ActiveSessionState>()(
         const newSet: SetLog = {
           id: makeId("set"),
           sessionId: session.id,
+          exerciseId: input.exerciseId,
           planExerciseId: input.planExerciseId,
+          assignedPlanId: session.assignedPlanId,
           setIndex: input.setIndex,
           type: "working",
           weight: input.weight,
@@ -72,6 +84,9 @@ export const useActiveSessionStore = create<ActiveSessionState>()(
           restTakenSeconds: input.restTakenSeconds,
           completedAt: new Date().toISOString(),
           notes: input.notes ?? null,
+          editedAt: null,
+          originalWeight: null,
+          deletedAt: null,
           syncedAt: null,
         };
         set({
@@ -110,7 +125,7 @@ export const useActiveSessionStore = create<ActiveSessionState>()(
       endSession: () => {
         const { session } = get();
         if (!session) return null;
-        const finished: Session = { ...session, endedAt: new Date().toISOString() };
+        const finished: SessionWithSets = { ...session, endedAt: new Date().toISOString() };
         set({ session: null, planDay: null, currentExerciseIndex: 0 });
         return finished;
       },
@@ -128,6 +143,25 @@ export const useActiveSessionStore = create<ActiveSessionState>()(
     {
       name: STORAGE_KEYS.activeSession,
       storage: createJSONStorage(() => AsyncStorage),
+      // Valida o estado persistido no limite do storage com os schemas v2.
+      // Se a sessão ou o plano persistidos estiverem corrompidos/fora do schema,
+      // descarta a sessão ativa de forma consistente (sem quebrar o app).
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<ActiveSessionState>;
+        const sessionResult = p.session ? SessionWithSetsSchema.safeParse(p.session) : null;
+        const planDayResult = p.planDay ? PlanDaySchema.safeParse(p.planDay) : null;
+        const valid = sessionResult?.success && planDayResult?.success;
+        if (!valid) {
+          return { ...current, session: null, planDay: null, currentExerciseIndex: 0 };
+        }
+        return {
+          ...current,
+          session: { ...sessionResult.data, sets: withoutDeleted(sessionResult.data.sets) },
+          planDay: planDayResult.data,
+          currentExerciseIndex:
+            typeof p.currentExerciseIndex === "number" ? p.currentExerciseIndex : 0,
+        };
+      },
     },
   ),
 );
