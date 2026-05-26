@@ -13,7 +13,7 @@ export const LoadHistoryEntrySchema = z.object({
   sessionId: z.string(),
   invalidatedAt: z.string().datetime().nullable().default(null),
   invalidationReason: z
-    .enum(["manual_override", "weight_change_requested", "coach_reset"])
+    .enum(["manual_override", "weight_change_requested", "coach_reset", "rom_change"])
     .nullable()
     .default(null),
 });

@@ -4,4 +4,7 @@ export const STORAGE_KEYS = {
   sessionHistory: "session-history",
   onboarding: "onboarding",
   appSettings: "app-settings",
+  coachAthleteRelations: "coach-athlete-relations",
+  pendingInvite: "pending-invite",
+  loadHistoryPrefix: "loadHistory",
 } as const;
