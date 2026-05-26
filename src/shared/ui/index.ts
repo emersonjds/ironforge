@@ -12,6 +12,8 @@ export { Screen } from "./screen";
 export type { ScreenProps } from "./screen";
 export { Logo } from "./logo";
 export type { LogoProps } from "./logo";
+export { AppHeader } from "./app-header";
+export type { AppHeaderProps } from "./app-header";
 export { Divider } from "./divider";
 export { EmptyState } from "./empty-state";
 export type { EmptyStateProps } from "./empty-state";

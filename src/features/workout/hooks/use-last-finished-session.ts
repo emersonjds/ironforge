@@ -30,6 +30,17 @@ export async function persistLastFinishedSession(session: StoredSession): Promis
   await persistSessionToHistory(session);
 }
 
+/** Atualiza o comentário (notes) da última sessão concluída, no storage e no histórico. */
+export async function updateLastFinishedSessionNotes(notes: string): Promise<void> {
+  const raw = await AsyncStorage.getItem(LAST_SESSION_KEY);
+  if (!raw) return;
+  const session = parseStoredSession(raw);
+  if (!session) return;
+  const updated: StoredSession = { ...session, notes: notes.trim() || null };
+  await AsyncStorage.setItem(LAST_SESSION_KEY, JSON.stringify(updated));
+  await persistSessionToHistory(updated);
+}
+
 export function useLastFinishedSession(): StoredSession | null {
   const [session, setSession] = useState<StoredSession | null>(null);
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ActivityIndicator, Pressable, View } from "react-native";
-import { Link, router } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import { cssInterop } from "nativewind";
 import { Screen, VStack, HStack, Text, Button, Input, Logo } from "@ui/index";
 import { useAuthStore } from "../store";
@@ -14,6 +14,8 @@ export function SignInScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const signIn = useAuthStore((s) => s.signIn);
+  const { role: roleParam } = useLocalSearchParams<{ role?: string }>();
+  const role = roleParam === "coach" ? "coach" : "athlete";
 
   async function handleSignIn() {
     setLoading(true);
@@ -40,16 +42,17 @@ export function SignInScreen() {
         videoPerformerPref: "any",
         onboardingCompleted: true,
       },
+      role,
     );
     setLoading(false);
-    router.replace("/(app)");
+    router.replace(role === "coach" ? "/(coach)" : "/(app)");
   }
 
   return (
     <Screen>
       <VStack space={8} className="flex-1 pt-4">
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => (router.canGoBack() ? router.back() : router.replace("/(auth)/welcome"))}
           accessibilityRole="button"
           accessibilityLabel="Voltar"
           className="self-start -ml-1 h-11 px-1 justify-center"
@@ -119,7 +122,7 @@ export function SignInScreen() {
             leading={loading ? <ActivityIndicator size="small" color="#FFFFFF" /> : undefined}
           />
 
-          <Link href="/(auth)/sign-up" asChild>
+          <Link href={{ pathname: "/(auth)/sign-up", params: { role } }} asChild>
             <Pressable accessibilityRole="link" className="self-center h-11 justify-center">
               <Text className="text-sm text-text-secondary text-center">
                 Não tem conta? <Text className="text-forest-500 font-semibold">Criar conta</Text>

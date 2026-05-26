@@ -1,5 +1,6 @@
 import { Tabs } from "expo-router";
 import { TabBar } from "@shared/tab-bar";
+import { colors } from "@theme/colors";
 
 export default function AppLayout() {
   return (
@@ -7,12 +8,16 @@ export default function AppLayout() {
       tabBar={(props) => <TabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        sceneStyle: { backgroundColor: "#0A0A0B" },
+        sceneStyle: { backgroundColor: colors.bg.DEFAULT },
       }}
     >
       <Tabs.Screen name="index" />
-      <Tabs.Screen name="history" />
+      <Tabs.Screen name="workouts" />
+      <Tabs.Screen name="progress" />
       <Tabs.Screen name="profile" />
+      {/* rotas navegáveis fora da tab bar */}
+      <Tabs.Screen name="history" options={{ href: null }} />
+      <Tabs.Screen name="notifications" options={{ href: null }} />
     </Tabs>
   );
 }

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ActivityIndicator, Pressable, View } from "react-native";
-import { Link, router } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import { cssInterop } from "nativewind";
 import { Screen, VStack, HStack, Text, Button, Input, Logo } from "@ui/index";
 import { PasswordStrengthBar } from "../components/password-strength-bar";
@@ -16,6 +16,8 @@ export function SignUpScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const signIn = useAuthStore((s) => s.signIn);
+  const { role: roleParam } = useLocalSearchParams<{ role?: string }>();
+  const role = roleParam === "coach" ? "coach" : "athlete";
 
   const canSubmit = !!name && !!email && password.length >= 8 && !loading;
 
@@ -44,16 +46,17 @@ export function SignUpScreen() {
         videoPerformerPref: "any",
         onboardingCompleted: false,
       },
+      role,
     );
     setLoading(false);
-    router.replace("/(onboarding)/goal");
+    router.replace(role === "coach" ? "/(coach)" : "/(onboarding)/goal");
   }
 
   return (
     <Screen>
       <VStack space={8} className="flex-1 pt-4">
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => (router.canGoBack() ? router.back() : router.replace("/(auth)/welcome"))}
           accessibilityRole="button"
           accessibilityLabel="Voltar"
           className="self-start -ml-1 h-11 px-1 justify-center"
@@ -132,7 +135,7 @@ export function SignUpScreen() {
             leading={loading ? <ActivityIndicator size="small" color="#FFFFFF" /> : undefined}
           />
 
-          <Link href="/(auth)/sign-in" asChild>
+          <Link href={{ pathname: "/(auth)/sign-in", params: { role } }} asChild>
             <Pressable accessibilityRole="link" className="self-center h-11 justify-center">
               <Text className="text-sm text-text-secondary text-center">
                 Já tem conta? <Text className="text-forest-500 font-semibold">Entrar</Text>

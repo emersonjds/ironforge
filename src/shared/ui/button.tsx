@@ -7,6 +7,7 @@ import Animated, {
 import { cssInterop } from "nativewind";
 import { Text } from "./text";
 import { motion } from "@theme/motion";
+import { colors } from "@theme/colors";
 import { haptics } from "@lib/haptics";
 
 cssInterop(Pressable, { className: "style" });
@@ -16,27 +17,19 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 type Variant = "solid" | "outline" | "ghost" | "destructive";
 type Size = "sm" | "md" | "lg" | "xl";
 
-const variantStyles: Record<Variant, { bg: string; text: string; border: string }> = {
-  solid: {
-    bg: "bg-forest-500 active:bg-forest-600",
-    text: "text-text-inverse",
-    border: "border-transparent",
-  },
-  outline: {
-    bg: "bg-transparent active:bg-bg-raised",
-    text: "text-text-primary",
-    border: "border border-border",
-  },
-  ghost: {
-    bg: "bg-transparent active:bg-bg-raised",
-    text: "text-text-primary",
-    border: "border-transparent",
-  },
-  destructive: {
-    bg: "bg-error active:bg-error-strong",
-    text: "text-text-primary",
-    border: "border-transparent",
-  },
+const variantStyles: Record<Variant, { bg: string; border: string }> = {
+  solid: { bg: "bg-forest-500 active:bg-forest-600", border: "border-transparent" },
+  outline: { bg: "bg-transparent active:bg-bg-sunken", border: "border border-border" },
+  ghost: { bg: "bg-transparent active:bg-bg-sunken", border: "border-transparent" },
+  destructive: { bg: "bg-error active:bg-error-strong", border: "border-transparent" },
+};
+
+// Cor do label via style inline (vence o className do componente Text de forma confiável).
+const labelColor: Record<Variant, string> = {
+  solid: colors.text.inverse, // branco sobre verde
+  outline: colors.text.primary,
+  ghost: colors.text.primary,
+  destructive: colors.text.inverse, // branco sobre vermelho
 };
 
 const sizeStyles: Record<Size, { container: string; label: string }> = {
@@ -117,7 +110,9 @@ export function Button({
       {...rest}
     >
       {leading}
-      <Text className={`${v.text} ${s.label}`}>{label}</Text>
+      <Text style={{ color: labelColor[variant] }} className={s.label}>
+        {label}
+      </Text>
       {trailing}
     </AnimatedPressable>
   );

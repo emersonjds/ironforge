@@ -202,7 +202,9 @@ export function NumericKeypadSheet({
               ) : null}
             </View>
             {field === "rir" ? (
-              <Text className="text-xs text-text-tertiary mt-1 uppercase tracking-widest">reps em reserva · 0 = falha</Text>
+              <Text className="text-xs text-text-tertiary mt-1 normal-case">
+                quantas reps ainda sobravam · 0 = foi até a falha
+              </Text>
             ) : null}
           </View>
 
@@ -253,7 +255,7 @@ export function NumericKeypadSheet({
               onPress={advanceField}
               className="h-14 rounded-xl bg-forest-500 items-center justify-center flex-row gap-2 active:bg-forest-600"
             >
-              <Text className="text-text-inverse font-bold uppercase tracking-wider text-base">
+              <Text style={{ color: "#FFFFFF" }} className="font-bold uppercase tracking-wider text-base">
                 {field === "rir" ? "✓ confirmar série" : "próximo →"}
               </Text>
             </Pressable>

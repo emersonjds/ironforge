@@ -10,13 +10,21 @@ import type { AthleteProfile } from "@/types/domain";
  * para não quebrar telas que ainda lêem user.goal / user.unitSystem etc.
  * Na Fase B os hooks de perfil passarão a ler diretamente do athleteProfile.
  */
+export type UserRole = "athlete" | "coach";
+
 interface AuthState {
   user: User | null;
+  role: UserRole | null;
   athleteProfile: AthleteProfile | null;
   token: string | null;
   isAuthenticated: boolean;
   hasCompletedOnboarding: boolean;
-  signIn: (user: User, token: string, athleteProfile?: AthleteProfile) => void;
+  signIn: (
+    user: User,
+    token: string,
+    athleteProfile?: AthleteProfile,
+    role?: UserRole,
+  ) => void;
   signOut: () => void;
   completeOnboarding: (patch: Partial<AthleteProfile>) => void;
 }
@@ -35,11 +43,12 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
+      role: null,
       athleteProfile: null,
       token: null,
       isAuthenticated: false,
       hasCompletedOnboarding: false,
-      signIn: (user, token, athleteProfile) => {
+      signIn: (user, token, athleteProfile, role = "athlete") => {
         const profile: AthleteProfile = athleteProfile ?? {
           userId: user.id,
           coachId: null,
@@ -47,15 +56,18 @@ export const useAuthStore = create<AuthState>()(
         };
         set({
           user,
+          role,
           athleteProfile: profile,
           token,
           isAuthenticated: true,
-          hasCompletedOnboarding: profile.onboardingCompleted,
+          // coach não passa pelo onboarding de aluno
+          hasCompletedOnboarding: role === "coach" ? true : profile.onboardingCompleted,
         });
       },
       signOut: () =>
         set({
           user: null,
+          role: null,
           athleteProfile: null,
           token: null,
           isAuthenticated: false,

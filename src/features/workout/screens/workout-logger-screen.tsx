@@ -104,8 +104,8 @@ export function WorkoutLoggerScreen() {
     if (prs.length) {
       const e1rm = prs.find((p) => p.type === "e1rm");
       const repMax = prs.find((p) => p.type === "rep_max");
-      if (e1rm) setLastPRMessage(`PR! e1RM ${e1rm.weight.toFixed(1)}kg`);
-      else if (repMax) setLastPRMessage(`PR! ${repMax.weight}kg × ${repMax.reps}`);
+      if (e1rm) setLastPRMessage(`🏆 Novo recorde de força! ~${e1rm.weight.toFixed(1)}kg`);
+      else if (repMax) setLastPRMessage(`🏆 Novo recorde! ${repMax.weight}kg × ${repMax.reps}`);
       haptics.pr();
     } else {
       setLastPRMessage(null);
@@ -227,7 +227,7 @@ export function WorkoutLoggerScreen() {
                 <>
                   <View className="w-px h-3 bg-border" />
                   <Text className="text-xs text-text-tertiary">
-                    e1RM {sessionBestE1RM.toFixed(1)}kg
+                    máx. estimado {sessionBestE1RM.toFixed(1)}kg
                   </Text>
                 </>
               ) : null}

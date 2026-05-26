@@ -1,29 +1,46 @@
 import { Pressable, View } from "react-native";
 import { cssInterop } from "nativewind";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { type BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Text } from "@ui/text";
+import { colors } from "@theme/colors";
 import { haptics } from "@lib/haptics";
 
 cssInterop(Pressable, { className: "style" });
 cssInterop(View, { className: "style" });
 
-const LABELS: Record<string, { label: string; icon: string }> = {
-  index: { label: "HOJE", icon: "◈" },
-  history: { label: "HISTÓRICO", icon: "◎" },
-  profile: { label: "PERFIL", icon: "◉" },
+type IoniconName = keyof typeof Ionicons.glyphMap;
+export interface TabConfig {
+  label: string;
+  icon: IoniconName;
+  iconActive: IoniconName;
+}
+
+export const ATHLETE_TABS: Record<string, TabConfig> = {
+  index: { label: "Início", icon: "home-outline", iconActive: "home" },
+  workouts: { label: "Treinos", icon: "barbell-outline", iconActive: "barbell" },
+  progress: { label: "Progresso", icon: "stats-chart-outline", iconActive: "stats-chart" },
+  profile: { label: "Perfil", icon: "person-outline", iconActive: "person" },
 };
 
-export function TabBar({ state, navigation }: BottomTabBarProps) {
+interface TabBarProps extends BottomTabBarProps {
+  config?: Record<string, TabConfig>;
+}
+
+export function TabBar({ state, navigation, config = ATHLETE_TABS }: TabBarProps) {
   const insets = useSafeAreaInsets();
+  const tabRoutes = state.routes.filter((r) => config[r.name]);
+
   return (
     <View
-      className="flex-row bg-bg border-t border-border-subtle"
-      style={{ paddingBottom: Math.max(insets.bottom, 12), paddingTop: 10 }}
+      className="flex-row bg-bg-raised border-t border-border"
+      style={{ paddingBottom: Math.max(insets.bottom, 10), paddingTop: 10 }}
     >
-      {state.routes.map((route, index) => {
-        const isFocused = state.index === index;
-        const meta = LABELS[route.name] ?? { label: route.name.toUpperCase(), icon: "·" };
+      {tabRoutes.map((route) => {
+        const realIndex = state.routes.findIndex((r) => r.key === route.key);
+        const isFocused = state.index === realIndex;
+        const meta = config[route.name]!;
 
         function onPress() {
           const event = navigation.emit({
@@ -43,17 +60,18 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
             onPress={onPress}
             accessibilityRole="button"
             accessibilityState={isFocused ? { selected: true } : {}}
+            accessibilityLabel={meta.label}
             className="flex-1 items-center justify-center gap-1 py-1"
           >
-            {/* Active indicator dot above icon */}
-            <View className={`w-1 h-1 rounded-full mb-0.5 ${isFocused ? "bg-forest-500" : "bg-transparent"}`} />
+            <Ionicons
+              name={isFocused ? meta.iconActive : meta.icon}
+              size={24}
+              color={isFocused ? colors.forest[500] : colors.text.tertiary}
+            />
             <Text
-              className={`text-base leading-none ${isFocused ? "text-forest-500" : "text-text-disabled"}`}
-            >
-              {meta.icon}
-            </Text>
-            <Text
-              className={`text-2xs font-bold tracking-widest ${isFocused ? "text-forest-400" : "text-text-tertiary"}`}
+              className={`text-2xs font-semibold tracking-wide ${
+                isFocused ? "text-forest-500" : "text-text-tertiary"
+              }`}
             >
               {meta.label}
             </Text>

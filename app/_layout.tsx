@@ -9,6 +9,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { View } from "react-native";
 import { cssInterop } from "nativewind";
 import { queryClient } from "@lib/query/client";
+import { colors } from "@theme/colors";
 
 cssInterop(View, { className: "style" });
 
@@ -26,13 +27,14 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
-        <View className="flex-1 bg-bg dark">
-          <StatusBar style="light" />
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#0A0A0B" } }}>
+        <View className="flex-1 bg-bg">
+          <StatusBar style="dark" />
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg.DEFAULT } }}>
             <Stack.Screen name="index" />
             <Stack.Screen name="(auth)" />
             <Stack.Screen name="(onboarding)" />
             <Stack.Screen name="(app)" />
+            <Stack.Screen name="(coach)" />
             <Stack.Screen
               name="(workout)"
               options={{ presentation: "fullScreenModal", gestureEnabled: false }}
