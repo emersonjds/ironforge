@@ -91,11 +91,17 @@ function StudentRow({ student }: { student: CoachStudent }) {
 
           <VStack space={1} className="flex-1">
             <HStack justify="between" align="center">
-              <Text className="text-base font-bold text-text-primary">{student.name}</Text>
+              <Text
+                className="text-base font-bold text-text-primary flex-shrink mr-2"
+                numberOfLines={1}
+              >
+                {student.name}
+              </Text>
               {inactive ? (
-                <View className="bg-warning/15 rounded-pill px-2 py-0.5">
-                  <Text className="text-2xs font-bold text-warning">
-                    {student.daysSinceLastSession}d sem treinar
+                <View className="flex-row items-center gap-1 bg-warning/15 rounded-pill px-2 py-0.5 flex-shrink-0">
+                  <Ionicons name="alert-circle" size={11} color={colors.warning} />
+                  <Text className="text-[10px] font-semibold text-warning leading-none">
+                    {student.daysSinceLastSession}d parado
                   </Text>
                 </View>
               ) : null}
