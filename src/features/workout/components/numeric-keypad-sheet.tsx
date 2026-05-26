@@ -255,7 +255,7 @@ export function NumericKeypadSheet({
               onPress={advanceField}
               className="h-14 rounded-xl bg-forest-500 items-center justify-center flex-row gap-2 active:bg-forest-600"
             >
-              <Text className="text-text-inverse font-bold uppercase tracking-wider text-base">
+              <Text style={{ color: "#FFFFFF" }} className="font-bold uppercase tracking-wider text-base">
                 {field === "rir" ? "✓ confirmar série" : "próximo →"}
               </Text>
             </Pressable>

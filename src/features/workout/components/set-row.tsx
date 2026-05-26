@@ -110,7 +110,7 @@ export function SetRow({
         <View className="w-7 items-center">
           {status === "done" ? (
             <View className="w-6 h-6 rounded-full bg-success items-center justify-center">
-              <Text className="text-text-inverse text-xs font-bold">✓</Text>
+              <Text style={{ color: "#FFFFFF" }} className="text-xs font-bold">✓</Text>
             </View>
           ) : status === "active" ? (
             <View className="w-6 h-6 rounded-full border-2 border-forest-500" />
