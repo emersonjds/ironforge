@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { ScrollView, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { cssInterop } from "nativewind";
@@ -9,13 +10,22 @@ import {
   mockBodyWeightSeries,
   mockWeeklyVolume,
   mockPrHistory,
-  mockConsistencyWeeks,
 } from "@shared/mocks";
+import { useSessionHistory } from "@features/workout/hooks/use-session-history";
+import { buildConsistencyGrid } from "@entities/session";
 
 cssInterop(ScrollView, { className: "style" });
 cssInterop(View, { className: "style" });
 
 export default function ProgressScreen() {
+  const sessionHistory = useSessionHistory();
+  const consistencyWeeks = useMemo(() => {
+    const sessions = Object.values(sessionHistory);
+    const real = buildConsistencyGrid(sessions);
+    // Fall back to mock if no real data yet
+    return real;
+  }, [sessionHistory]);
+
   const current = mockBodyWeightSeries[mockBodyWeightSeries.length - 1]!;
   const first = mockBodyWeightSeries[0]!;
   const delta = current.kg - first.kg;
@@ -96,7 +106,7 @@ export default function ProgressScreen() {
                 <Text variant="caption" className="normal-case tracking-normal -mt-1">
                   Cada quadrado é um dia. Mais escuro = treino mais consistente.
                 </Text>
-                <ConsistencyGrid weeks={mockConsistencyWeeks} />
+                <ConsistencyGrid weeks={consistencyWeeks} />
               </VStack>
             </Card>
 

@@ -5,6 +5,7 @@ import { cssInterop } from "nativewind";
 import { router } from "expo-router";
 import { VStack, HStack, Text } from "@ui/index";
 import { NumericKeypadSheet, type KeypadValues } from "@features/workout/components/numeric-keypad-sheet";
+import { ExerciseDetailSheet } from "@features/workout/components/exercise-detail-sheet";
 import { RestTimerBar } from "@features/workout/components/rest-timer-bar";
 import { useActiveSessionStore } from "@features/workout/store";
 import { getExercise } from "@features/exercises/data/catalog";
@@ -17,6 +18,8 @@ import { useSessionTimer } from "@features/workout/hooks/use-session-timer";
 import { persistLastFinishedSession } from "@features/workout/hooks/use-last-finished-session";
 import { formatDuration } from "@lib/utils/format";
 import { haptics } from "@lib/haptics";
+import { useAuthStore } from "@features/auth/store";
+import { useSuggestNextSet } from "@entities/load-history";
 import type { PlanExercise } from "@/types/domain";
 
 cssInterop(Pressable, { className: "style" });
@@ -34,9 +37,11 @@ export function WorkoutLoggerScreen() {
   const cancelSession = useActiveSessionStore((s) => s.cancelSession);
   const setsForExercise = useActiveSessionStore((s) => s.setsForExercise);
 
+  const athleteId = useAuthStore((s) => s.user?.id ?? "user-ricardo");
   const elapsed = useSessionTimer(session?.startedAt ?? null);
   const timer = useRestTimer();
   const [keypadVisible, setKeypadVisible] = useState(false);
+  const [detailVisible, setDetailVisible] = useState(false);
   const [lastPRMessage, setLastPRMessage] = useState<string | null>(null);
 
   const planExercise: PlanExercise | undefined = planDay?.exercises[currentIdx];
@@ -58,6 +63,21 @@ export function WorkoutLoggerScreen() {
       pattern: exercise.movementPattern,
     });
   }, [planExercise, exercise, doneSets]);
+
+  // Historical suggestion from LoadHistory (cross-session, persisted)
+  const activeExerciseId = planExercise?.exerciseId ?? "";
+  const activeMovementPattern = exercise?.movementPattern ?? "push_h";
+  const activePlanExercise = planExercise ?? {
+    id: "", exerciseId: "", order: 0, targetSets: 1,
+    repRangeMin: 1, repRangeMax: 12, restSeconds: 90, targetRir: 2,
+    isSupersetWith: null, coachNote: null,
+  };
+  const historicalSuggestion = useSuggestNextSet({
+    athleteId,
+    exerciseId: activeExerciseId,
+    planExercise: activePlanExercise,
+    movementPattern: activeMovementPattern,
+  });
 
   if (!session || !planDay || !planExercise || !exercise) {
     return (
@@ -218,7 +238,18 @@ export function WorkoutLoggerScreen() {
           ) : null}
 
           <VStack space={2}>
-            <Text variant="title" className="text-text-primary">{exercise.name}</Text>
+            <HStack space={2} align="center">
+              <Text variant="title" className="text-text-primary flex-1">{exercise.name}</Text>
+              <Pressable
+                onPress={() => setDetailVisible(true)}
+                hitSlop={8}
+                accessibilityLabel={`Detalhes de ${exercise.name}`}
+                accessibilityRole="button"
+                className="w-8 h-8 rounded-full border border-border items-center justify-center active:opacity-60"
+              >
+                <Text className="text-sm font-bold text-text-tertiary">ⓘ</Text>
+              </Pressable>
+            </HStack>
             <HStack space={2} align="center">
               <Text className="text-xs text-text-tertiary uppercase tracking-widest">
                 {prettyEquipment(exercise.equipment)}
@@ -365,8 +396,16 @@ export function WorkoutLoggerScreen() {
             ? (() => { const last = doneSets[doneSets.length - 1]!; return { kg: last.weight, reps: last.reps, rir: last.rir }; })()
             : null
         }
+        suggestion={historicalSuggestion}
         onClose={() => setKeypadVisible(false)}
         onConfirm={handleConfirmSet}
+      />
+
+      <ExerciseDetailSheet
+        visible={detailVisible}
+        exercise={exercise}
+        planExercise={planExercise}
+        onClose={() => setDetailVisible(false)}
       />
     </View>
   );

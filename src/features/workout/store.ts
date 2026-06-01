@@ -4,7 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { STORAGE_KEYS } from "@lib/storage/keys";
 import { SessionWithSetsSchema } from "@entities/session";
 import { PlanDaySchema } from "@entities/plan";
-import { withoutDeleted } from "@entities/load-history";
+import { withoutDeleted, useLoadHistoryStore } from "@entities/load-history";
 import type { PlanDay, Session, SetLog } from "@/types/domain";
 
 function makeId(prefix: string): string {
@@ -92,6 +92,22 @@ export const useActiveSessionStore = create<ActiveSessionState>()(
         set({
           session: { ...session, sets: [...session.sets, newSet] },
         });
+
+        // Persist load history entry (fire-and-forget, non-blocking)
+        useLoadHistoryStore.getState().upsert({
+          id: makeId("lh"),
+          athleteId: session.athleteId,
+          exerciseId: input.exerciseId,
+          weight: input.weight,
+          reps: input.reps,
+          rir: input.rir,
+          setType: "working",
+          performedAt: newSet.completedAt,
+          sessionId: session.id,
+          invalidatedAt: null,
+          invalidationReason: null,
+        }).catch(() => {});
+
         return newSet;
       },
 

@@ -1,6 +1,5 @@
-import { useState } from "react";
-import { ScrollView, View, Pressable, StyleSheet } from "react-native";
-import { Image } from "expo-image";
+import { useMemo, useState } from "react";
+import { ScrollView, View, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { cssInterop } from "nativewind";
 import { router } from "expo-router";
@@ -8,7 +7,6 @@ import { Screen, VStack, HStack, Text, Button, Card, AppHeader } from "@ui/index
 import { colors } from "@theme/colors";
 import {
   mockUser,
-  mockTodayHero,
   mockHydration,
   mockSupplements,
   mockUpcomingSessions,
@@ -17,8 +15,12 @@ import {
 } from "@shared/mocks";
 import { SEED_PLAN } from "@features/plans/data/seed-plan";
 import { useSessionHistory } from "@features/workout/hooks/use-session-history";
+import { useLastFinishedSession } from "@features/workout/hooks/use-last-finished-session";
 import { DaySessionSheet } from "@features/workout/components/day-session-sheet";
 import type { StoredSession } from "@features/workout/hooks/use-last-finished-session";
+import { resolveNextSession } from "@entities/plan";
+import { getExercise } from "@entities/exercise";
+import { muscleLabel } from "@entities/exercise/lib/muscle-labels";
 
 cssInterop(ScrollView, { className: "style" });
 cssInterop(View, { className: "style" });
@@ -109,37 +111,68 @@ export default function DashboardScreen() {
 }
 
 function TodayHeroCard() {
+  const lastSession = useLastFinishedSession();
+  const resolved = useMemo(
+    () => resolveNextSession(SEED_PLAN, lastSession ? { planDayId: lastSession.planDayId } : null),
+    [lastSession],
+  );
+  const planDay = resolved.planDay;
+
+  // Deduplicated primary muscles from this day's exercises
+  const musclesSummary = useMemo(() => {
+    const seen = new Set<string>();
+    const labels: string[] = [];
+    for (const pe of planDay.exercises) {
+      const ex = getExercise(pe.exerciseId);
+      if (ex && !seen.has(ex.primaryMuscle)) {
+        seen.add(ex.primaryMuscle);
+        labels.push(muscleLabel(ex.primaryMuscle));
+        if (labels.length >= 3) break;
+      }
+    }
+    return labels.join(" · ");
+  }, [planDay]);
+
+  const estimatedMin = useMemo(
+    () =>
+      Math.round(
+        planDay.exercises.reduce((acc, ex) => acc + ex.targetSets * (1 + ex.restSeconds / 60), 0),
+      ),
+    [planDay],
+  );
+
+  const badgeLabel = resolved.isToday ? `Treino de Hoje · ${planDay.slotLabel}` : `Próximo · ${planDay.slotLabel}`;
+
   return (
-    <View className="rounded-xl overflow-hidden" style={{ minHeight: 200 }}>
-      <Image source={{ uri: HERO_IMAGE }} style={StyleSheet.absoluteFill} contentFit="cover" />
-      <View style={StyleSheet.absoluteFill} className="bg-forest-900/70" />
-      <View className="p-6 flex-1 justify-between" style={{ minHeight: 200 }}>
-        <View className="self-start bg-forest-500 rounded-pill px-3 py-1">
-          <Text className="text-2xs font-bold uppercase tracking-widest text-white">
-            {mockTodayHero.tag}
+    <Card variant="raised" padding="lg">
+      <VStack space={4}>
+        <View className="self-start bg-forest-500 rounded-full px-3 py-1">
+          <Text className="text-2xs font-bold uppercase tracking-widest" style={{ color: "#FFFFFF" }}>
+            {badgeLabel}
           </Text>
         </View>
-        <VStack space={3} className="mt-4">
-          <VStack space={1}>
-            <Text className="font-display text-3xl font-black text-white tracking-tight">
-              {mockTodayHero.name}
-            </Text>
-            <Text className="text-sm text-white/80">{mockTodayHero.focus}</Text>
-            <Text className="text-xs text-white/60 mt-1">
-              Tempo estimado: {mockTodayHero.estimatedMin} min
-            </Text>
-          </VStack>
-          <Button
-            label="Iniciar Agora"
-            variant="solid"
-            size="lg"
-            trailing={<Ionicons name="arrow-forward" size={18} color="#FFFFFF" />}
-            className="self-start"
-            onPress={() => router.push("/(workout)/preview")}
-          />
+        <VStack space={1}>
+          <Text className="font-display text-2xl font-black text-text-primary tracking-tight">
+            {planDay.name}
+          </Text>
+          {musclesSummary ? (
+            <Text className="text-sm text-text-secondary">{musclesSummary}</Text>
+          ) : null}
+          <Text className="text-xs text-text-tertiary mt-1">
+            {planDay.exercises.length} exercícios · ~{estimatedMin} min
+          </Text>
         </VStack>
-      </View>
-    </View>
+        <View className="h-px bg-border-subtle" />
+        <Button
+          label="INICIAR TREINO"
+          variant="solid"
+          size="lg"
+          fullWidth
+          trailing={<Ionicons name="arrow-forward" size={18} color="#FFFFFF" />}
+          onPress={() => router.push("/(workout)/preview")}
+        />
+      </VStack>
+    </Card>
   );
 }
 

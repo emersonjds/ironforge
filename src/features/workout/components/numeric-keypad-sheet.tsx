@@ -27,10 +27,17 @@ export interface KeypadPrevious {
   rir: number | null;
 }
 
+export interface KeypadSuggestion {
+  weight: number;
+  reps: number;
+  note: string;
+}
+
 export interface NumericKeypadSheetProps {
   visible: boolean;
   initial: KeypadValues;
   previous: KeypadPrevious | null;
+  suggestion?: KeypadSuggestion | null;
   onClose: () => void;
   onConfirm: (values: KeypadValues) => void;
 }
@@ -39,6 +46,7 @@ export function NumericKeypadSheet({
   visible,
   initial,
   previous,
+  suggestion,
   onClose,
   onConfirm,
 }: NumericKeypadSheetProps) {
@@ -156,16 +164,23 @@ export function NumericKeypadSheet({
             <View className="px-4 mb-4">
               <Pressable
                 onPress={tapSameAsPrevious}
-                className="h-14 w-full rounded-xl bg-forest-500/20 border border-forest-500 items-center justify-center flex-row gap-3 active:bg-forest-500/30"
+                className="w-full rounded-xl bg-forest-500/20 border border-forest-500 items-center justify-center flex-row gap-3 active:bg-forest-500/30 px-4 py-3"
               >
                 <Text className="text-forest-300 font-bold uppercase tracking-widest text-sm">
                   = ANTERIOR
                 </Text>
                 <View className="w-px h-4 bg-forest-500/50" />
-                <Text className="text-forest-400 text-base font-semibold font-mono">
-                  {formatKg(previous.kg)}kg × {previous.reps}
-                  {previous.rir !== null ? `  RIR ${previous.rir}` : ""}
-                </Text>
+                <View className="flex-1 items-start">
+                  <Text className="text-forest-400 text-base font-semibold font-mono">
+                    {formatKg(previous.kg)}kg × {previous.reps}
+                    {previous.rir !== null ? `  RIR ${previous.rir}` : ""}
+                  </Text>
+                  {suggestion && (suggestion.weight !== previous.kg || suggestion.reps !== previous.reps) ? (
+                    <Text className="text-forest-300/70 text-xs mt-0.5 italic" numberOfLines={1}>
+                      {suggestion.note}
+                    </Text>
+                  ) : null}
+                </View>
               </Pressable>
             </View>
           ) : null}
