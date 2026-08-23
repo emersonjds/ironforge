@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { Screen, VStack, Text, Logo } from "@ui/index";
 import { colors } from "@theme/colors";
+import { DevLoginPicker } from "../components/dev-login-picker";
 import { cssInterop } from "nativewind";
 
 cssInterop(View, { className: "style" });
@@ -55,6 +56,7 @@ export function WelcomeScreen() {
             <Text variant="caption" className="text-center mt-2 px-4 normal-case tracking-normal">
               Ao continuar, você concorda com os Termos de Uso e a Política de Privacidade.
             </Text>
+            <DevLoginPicker />
           </VStack>
         </AnimatedView>
       </VStack>
