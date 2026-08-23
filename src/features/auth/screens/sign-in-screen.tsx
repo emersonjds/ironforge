@@ -4,6 +4,7 @@ import { Link, router, useLocalSearchParams } from "expo-router";
 import { cssInterop } from "nativewind";
 import { Screen, VStack, HStack, Text, Button, Input, Logo } from "@ui/index";
 import { useAuthStore } from "../store";
+import { DevLoginPicker } from "../components/dev-login-picker";
 
 cssInterop(Pressable, { className: "style" });
 cssInterop(View, { className: "style" });
@@ -129,6 +130,8 @@ export function SignInScreen() {
               </Text>
             </Pressable>
           </Link>
+
+          <DevLoginPicker />
         </VStack>
       </VStack>
     </Screen>

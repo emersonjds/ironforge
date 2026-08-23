@@ -4,6 +4,7 @@
   "main": "expo-router/entry",
   "private": true,
   "scripts": {
+    "postinstall": "node scripts/patch-expo-monkey.mjs",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
