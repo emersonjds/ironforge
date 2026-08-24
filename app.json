@@ -46,15 +46,15 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "ca7b78e6-46d4-4390-ba0e-ed58b36a8d5f"
+        "projectId": "0269a230-d442-4fa6-8062-33eee62435a3"
       }
     },
-    "owner": "emersonjdss",
+    "owner": "ironforgeapp",
     "runtimeVersion": {
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/ca7b78e6-46d4-4390-ba0e-ed58b36a8d5f"
+      "url": "https://u.expo.dev/0269a230-d442-4fa6-8062-33eee62435a3"
     }
   }
 }
