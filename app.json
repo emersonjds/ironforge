@@ -42,6 +42,19 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "ca7b78e6-46d4-4390-ba0e-ed58b36a8d5f"
+      }
+    },
+    "owner": "emersonjdss",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/ca7b78e6-46d4-4390-ba0e-ed58b36a8d5f"
     }
   }
 }
