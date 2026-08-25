@@ -42,8 +42,8 @@ export type { CoachProfile, CoachAthleteRelation } from "@/entities/coach/schema
 // Exercício e vídeo
 export { ExerciseSchema } from "@/entities/exercise/schema";
 export type { Exercise } from "@/entities/exercise/schema";
-export { VideoSchema, ExerciseDemoSchema } from "@/entities/video/schema";
-export type { Video, ExerciseDemo } from "@/entities/video/schema";
+export { ExerciseDemoSchema, PlaybackSchema } from "@/entities/video/schema";
+export type { ExerciseDemo, Playback } from "@/entities/video/schema";
 
 // Planos
 export {
