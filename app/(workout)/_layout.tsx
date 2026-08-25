@@ -12,6 +12,10 @@ export default function WorkoutLayout() {
       <Stack.Screen name="preview" />
       <Stack.Screen name="logger" />
       <Stack.Screen name="summary" />
+      <Stack.Screen
+        name="exercise/[planExerciseId]"
+        options={{ presentation: "fullScreenModal", animation: "slide_from_bottom", gestureEnabled: true }}
+      />
     </Stack>
   );
 }
