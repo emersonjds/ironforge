@@ -3,6 +3,7 @@ import { cssInterop } from "nativewind";
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from "react-native-reanimated";
 import { Text, Card, VStack, HStack } from "@ui/index";
 import { muscleLabel } from "@entities/exercise/lib/muscle-labels";
+import { ExerciseDemoSection } from "@entities/video";
 import type { Exercise } from "@entities/exercise";
 import type { PlanExercise } from "@entities/plan";
 
@@ -105,7 +106,7 @@ export function ExerciseDetailSheet({ visible, exercise, planExercise, onClose }
                 <>
                   <View className="h-px bg-border-subtle" />
                   <VStack space={2}>
-                    <Text className="text-2xs text-forest-500 uppercase tracking-widest">Nota do personal</Text>
+                    <Text className="text-2xs text-forest-500 uppercase tracking-widest">Hoje</Text>
                     <Card variant="accent" padding="md">
                       <Text className="text-sm text-text-primary leading-relaxed">{coachNote}</Text>
                     </Card>
@@ -113,18 +114,9 @@ export function ExerciseDetailSheet({ visible, exercise, planExercise, onClose }
                 </>
               ) : null}
 
-              {/* Video placeholder (P1) */}
-              <Card variant="raised" padding="md">
-                <HStack space={3} align="center">
-                  <View className="w-10 h-10 rounded-lg bg-surface-300 items-center justify-center">
-                    <Text className="text-lg">▷</Text>
-                  </View>
-                  <VStack space={1} className="flex-1">
-                    <Text className="text-sm font-semibold text-text-secondary">Vídeo demonstrativo</Text>
-                    <Text className="text-xs text-text-disabled">Em breve</Text>
-                  </VStack>
-                </HStack>
-              </Card>
+              {/* Vídeo demonstrativo */}
+              <View className="h-px bg-border-subtle" />
+              <ExerciseDemoSection exerciseId={exercise.id} />
             </VStack>
           </ScrollView>
         </Animated.View>
