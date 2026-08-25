@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { ScrollView, View, Pressable } from "react-native";
+import { ScrollView, View, Pressable, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { cssInterop } from "nativewind";
 import { router } from "expo-router";
-import { Screen, VStack, HStack, Text, Button, Card, AppHeader } from "@ui/index";
+import { Screen, VStack, HStack, Text, Button, Card, AppHeader, EmptyState } from "@ui/index";
 import { colors } from "@theme/colors";
 import {
   mockUser,
@@ -13,13 +13,15 @@ import {
   mockReminder,
   type Supplement,
 } from "@shared/mocks";
+// Frequência semanal ainda não tem endpoint — SEED_PLAN segue mock só para essa seção.
 import { SEED_PLAN } from "@features/plans/data/seed-plan";
+import { useAuthStore } from "@features/auth/store";
 import { useSessionHistory } from "@features/workout/hooks/use-session-history";
 import { useLastFinishedSession } from "@features/workout/hooks/use-last-finished-session";
 import { DaySessionSheet } from "@features/workout/components/day-session-sheet";
 import type { StoredSession } from "@features/workout/hooks/use-last-finished-session";
-import { resolveNextSession } from "@entities/plan";
-import { getExercise } from "@entities/exercise";
+import { useAssignments, pickActiveAssignment, resolveNextSession } from "@entities/plan";
+import { useExercises } from "@entities/exercise";
 import { muscleLabel } from "@entities/exercise/lib/muscle-labels";
 
 cssInterop(ScrollView, { className: "style" });
@@ -58,7 +60,8 @@ export default function DashboardScreen() {
     );
   }
 
-  const firstName = mockUser.displayName.split(" ")[0];
+  const authUser = useAuthStore((s) => s.user);
+  const firstName = authUser?.displayName.split(" ")[0] ?? "Atleta";
 
   return (
     <Screen edges={["top"]} padded={false}>
@@ -111,19 +114,33 @@ export default function DashboardScreen() {
 }
 
 function TodayHeroCard() {
+  const assignments = useAssignments();
+  const exercises = useExercises();
   const lastSession = useLastFinishedSession();
-  const resolved = useMemo(
-    () => resolveNextSession(SEED_PLAN, lastSession ? { planDayId: lastSession.planDayId } : null),
-    [lastSession],
+
+  const plan = pickActiveAssignment(assignments.data ?? []);
+  const isLoading = assignments.isLoading || exercises.isLoading;
+
+  const byId = useMemo(
+    () => new Map((exercises.data ?? []).map((exercise) => [exercise.id, exercise])),
+    [exercises.data],
   );
-  const planDay = resolved.planDay;
+
+  const resolved = useMemo(
+    () =>
+      plan
+        ? resolveNextSession(plan, lastSession ? { planDayId: lastSession.planDayId } : null)
+        : null,
+    [plan, lastSession],
+  );
 
   // Deduplicated primary muscles from this day's exercises
   const musclesSummary = useMemo(() => {
+    if (!resolved) return "";
     const seen = new Set<string>();
     const labels: string[] = [];
-    for (const pe of planDay.exercises) {
-      const ex = getExercise(pe.exerciseId);
+    for (const pe of resolved.planDay.exercises) {
+      const ex = byId.get(pe.exerciseId);
       if (ex && !seen.has(ex.primaryMuscle)) {
         seen.add(ex.primaryMuscle);
         labels.push(muscleLabel(ex.primaryMuscle));
@@ -131,17 +148,45 @@ function TodayHeroCard() {
       }
     }
     return labels.join(" · ");
-  }, [planDay]);
+  }, [resolved, byId]);
 
-  const estimatedMin = useMemo(
-    () =>
-      Math.round(
-        planDay.exercises.reduce((acc, ex) => acc + ex.targetSets * (1 + ex.restSeconds / 60), 0),
-      ),
-    [planDay],
-  );
+  const estimatedMin = useMemo(() => {
+    if (!resolved) return 0;
+    return Math.round(
+      resolved.planDay.exercises.reduce((acc, ex) => acc + ex.targetSets * (1 + ex.restSeconds / 60), 0),
+    );
+  }, [resolved]);
 
-  const badgeLabel = resolved.isToday ? `Treino de Hoje · ${planDay.slotLabel}` : `Próximo · ${planDay.slotLabel}`;
+  if (isLoading) {
+    return (
+      <View className="py-10 items-center">
+        <ActivityIndicator color={colors.forest[500]} />
+      </View>
+    );
+  }
+
+  if (assignments.isError) {
+    return (
+      <EmptyState
+        title="Não foi possível carregar seu treino"
+        description="Verifique sua conexão e tente de novo."
+        actionLabel="Tentar de novo"
+        onAction={() => assignments.refetch()}
+      />
+    );
+  }
+
+  if (!resolved) {
+    return (
+      <EmptyState
+        title="Nenhum plano ativo"
+        description="Seu personal ainda não enviou uma ficha para você."
+      />
+    );
+  }
+
+  const { planDay, isToday } = resolved;
+  const badgeLabel = isToday ? `Treino de Hoje · ${planDay.slotLabel}` : `Próximo · ${planDay.slotLabel}`;
 
   return (
     <Card variant="raised" padding="lg">
@@ -169,7 +214,9 @@ function TodayHeroCard() {
           size="lg"
           fullWidth
           trailing={<Ionicons name="arrow-forward" size={18} color="#FFFFFF" />}
-          onPress={() => router.push("/(workout)/preview")}
+          onPress={() =>
+            router.push({ pathname: "/(workout)/preview", params: { dayId: planDay.id } })
+          }
         />
       </VStack>
     </Card>

@@ -17,6 +17,7 @@ export const EXERCISE_CATALOG: Exercise[] = [
     requiresSpotter: true,
     riskFlags: [],
     ownerCoachId: null,
+    instructions: null,
   },
   {
     id: "ex-incline-db",
@@ -34,6 +35,7 @@ export const EXERCISE_CATALOG: Exercise[] = [
     requiresSpotter: false,
     riskFlags: [],
     ownerCoachId: null,
+    instructions: null,
   },
   {
     id: "ex-cable-crossover",
@@ -51,6 +53,7 @@ export const EXERCISE_CATALOG: Exercise[] = [
     requiresSpotter: false,
     riskFlags: [],
     ownerCoachId: null,
+    instructions: null,
   },
   {
     id: "ex-shoulder-press-machine",
@@ -68,6 +71,7 @@ export const EXERCISE_CATALOG: Exercise[] = [
     requiresSpotter: false,
     riskFlags: [],
     ownerCoachId: null,
+    instructions: null,
   },
   {
     id: "ex-lateral-raise",
@@ -85,6 +89,7 @@ export const EXERCISE_CATALOG: Exercise[] = [
     requiresSpotter: false,
     riskFlags: [],
     ownerCoachId: null,
+    instructions: null,
   },
   {
     id: "ex-tricep-rope",
@@ -102,6 +107,7 @@ export const EXERCISE_CATALOG: Exercise[] = [
     requiresSpotter: false,
     riskFlags: [],
     ownerCoachId: null,
+    instructions: null,
   },
   {
     id: "ex-lat-pulldown",
@@ -119,6 +125,7 @@ export const EXERCISE_CATALOG: Exercise[] = [
     requiresSpotter: false,
     riskFlags: [],
     ownerCoachId: null,
+    instructions: null,
   },
   {
     id: "ex-row-barbell",
@@ -136,6 +143,7 @@ export const EXERCISE_CATALOG: Exercise[] = [
     requiresSpotter: false,
     riskFlags: ["joelho_direito"],
     ownerCoachId: null,
+    instructions: null,
   },
   {
     id: "ex-row-seated",
@@ -153,6 +161,7 @@ export const EXERCISE_CATALOG: Exercise[] = [
     requiresSpotter: false,
     riskFlags: [],
     ownerCoachId: null,
+    instructions: null,
   },
   {
     id: "ex-bicep-curl-db",
@@ -170,6 +179,7 @@ export const EXERCISE_CATALOG: Exercise[] = [
     requiresSpotter: false,
     riskFlags: [],
     ownerCoachId: null,
+    instructions: null,
   },
   {
     id: "ex-face-pull",
@@ -187,6 +197,7 @@ export const EXERCISE_CATALOG: Exercise[] = [
     requiresSpotter: false,
     riskFlags: [],
     ownerCoachId: null,
+    instructions: null,
   },
   {
     id: "ex-squat-barbell",
@@ -204,6 +215,7 @@ export const EXERCISE_CATALOG: Exercise[] = [
     requiresSpotter: true,
     riskFlags: [],
     ownerCoachId: null,
+    instructions: null,
   },
   {
     id: "ex-rdl",
@@ -221,6 +233,7 @@ export const EXERCISE_CATALOG: Exercise[] = [
     requiresSpotter: false,
     riskFlags: [],
     ownerCoachId: null,
+    instructions: null,
   },
   {
     id: "ex-leg-press",
@@ -238,6 +251,7 @@ export const EXERCISE_CATALOG: Exercise[] = [
     requiresSpotter: false,
     riskFlags: [],
     ownerCoachId: null,
+    instructions: null,
   },
   {
     id: "ex-leg-curl",
@@ -255,6 +269,7 @@ export const EXERCISE_CATALOG: Exercise[] = [
     requiresSpotter: false,
     riskFlags: [],
     ownerCoachId: null,
+    instructions: null,
   },
   {
     id: "ex-calf-raise",
@@ -272,6 +287,7 @@ export const EXERCISE_CATALOG: Exercise[] = [
     requiresSpotter: false,
     riskFlags: [],
     ownerCoachId: null,
+    instructions: null,
   },
 ];
 

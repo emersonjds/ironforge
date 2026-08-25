@@ -27,7 +27,7 @@ App mobile _dark-first_ (Expo / React Native) para o aluno, com prescrição de 
 <p align="center">
   <img src="https://img.shields.io/badge/coverage-83.7%25-2EA043?style=flat-square&logo=jest&logoColor=white" alt="Coverage" />
   <img src="https://img.shields.io/badge/tests-53_passed-2EA043?style=flat-square&logo=jest&logoColor=white" alt="Tests" />
-  <img src="https://img.shields.io/badge/pnpm-10-F69220?style=flat-square&logo=pnpm&logoColor=white" alt="pnpm" />
+  <img src="https://img.shields.io/badge/npm-10-CB3837?style=flat-square&logo=npm&logoColor=white" alt="npm" />
   <img src="https://img.shields.io/badge/platform-iOS_|_Android_|_Web-555?style=flat-square&logo=apple&logoColor=white" alt="Platform" />
   <img src="https://img.shields.io/badge/license-Proprietary-555?style=flat-square" alt="License" />
 </p>
@@ -60,7 +60,7 @@ App mobile _dark-first_ (Expo / React Native) para o aluno, com prescrição de 
 | **Storage** | AsyncStorage |
 | **Testes** | Jest `29` + `jest-expo` |
 | **Qualidade** | TypeScript estrito · ESLint `9` (+ `eslint-plugin-boundaries`) · Prettier |
-| **Gerenciador** | pnpm `10` (node-linker hoisted) |
+| **Gerenciador** | npm `10` |
 
 ---
 
@@ -69,7 +69,7 @@ App mobile _dark-first_ (Expo / React Native) para o aluno, com prescrição de 
 ### Pré-requisitos
 
 - **Node.js** 20+
-- **pnpm** 10 (`npm i -g pnpm`)
+- **npm** 10 (vem com o Node)
 - App **Expo Go** no celular, ou um simulador iOS / emulador Android
 
 ### Instalação
@@ -77,27 +77,27 @@ App mobile _dark-first_ (Expo / React Native) para o aluno, com prescrição de 
 ```bash
 git clone git@github.com:emersonjds/ironforge.git
 cd ironforge
-pnpm install
+npm install
 ```
 
 ### Subir o app
 
 ```bash
-pnpm start        # Metro + QR code (Expo Go)
-pnpm ios          # abre no simulador iOS
-pnpm android      # abre no emulador Android
-pnpm web          # roda no navegador
+npm run start        # Metro + QR code (Expo Go)
+npm run ios          # abre no simulador iOS
+npm run android      # abre no emulador Android
+npm run web          # roda no navegador
 ```
 
 ### Scripts disponíveis
 
 | Comando | O que faz |
 | --- | --- |
-| `pnpm start` | Inicia o Metro bundler (Expo) |
-| `pnpm ios` / `pnpm android` / `pnpm web` | Abre na plataforma alvo |
-| `pnpm test` | Roda a suíte de testes unitários |
-| `pnpm typecheck` | Checagem de tipos (`tsc --noEmit`) |
-| `pnpm lint` | ESLint em todo o projeto |
+| `npm run start` | Inicia o Metro bundler (Expo) |
+| `npm run ios` / `npm run android` / `npm run web` | Abre na plataforma alvo |
+| `npm run test` | Roda a suíte de testes unitários |
+| `npm run typecheck` | Checagem de tipos (`tsc --noEmit`) |
+| `npm run lint` | ESLint em todo o projeto |
 
 ---
 
@@ -106,8 +106,8 @@ pnpm web          # roda no navegador
 Lógica de domínio (cálculos de treino, progressão e regras de sessão) coberta por **53 testes** em **6 suítes**, todos passando.
 
 ```bash
-pnpm test                 # roda os testes
-pnpm test -- --coverage   # com relatório de cobertura
+npm test                 # roda os testes
+npm test -- --coverage   # com relatório de cobertura
 ```
 
 | Métrica | Cobertura | |

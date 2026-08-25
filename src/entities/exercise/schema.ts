@@ -17,5 +17,6 @@ export const ExerciseSchema = z.object({
   requiresSpotter: z.boolean().default(false),
   riskFlags: z.array(z.string()).default([]),
   ownerCoachId: z.string().nullable().default(null),
+  instructions: z.string().nullable().default(null),
 });
 export type Exercise = z.infer<typeof ExerciseSchema>;

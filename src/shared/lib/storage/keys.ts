@@ -7,4 +7,5 @@ export const STORAGE_KEYS = {
   coachAthleteRelations: "coach-athlete-relations",
   pendingInvite: "pending-invite",
   loadHistoryPrefix: "loadHistory",
+  hasOpenedExerciseSheet: "has-opened-exercise-sheet",
 } as const;
