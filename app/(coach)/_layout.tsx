@@ -17,6 +17,7 @@ export default function CoachLayout() {
       <Tabs.Screen name="financeiro" />
       <Tabs.Screen name="perfil" />
       <Tabs.Screen name="student/[id]" options={{ href: null }} />
+      <Tabs.Screen name="exercise-videos" options={{ href: null }} />
     </Tabs>
   );
 }

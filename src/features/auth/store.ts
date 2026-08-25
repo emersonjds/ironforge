@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { STORAGE_KEYS } from "@shared/lib/storage/keys";
+import { setApiAuthToken } from "@shared/lib/api/auth-token";
 import { mockRelation } from "@shared/mocks";
 import type { User } from "@/types/domain";
 import type { AthleteProfile } from "@/types/domain";
@@ -55,6 +56,7 @@ export const useAuthStore = create<AuthState>()(
           coachId: role === "athlete" ? mockRelation.coachId : null,
           ...DEFAULT_ATHLETE_PROFILE,
         };
+        setApiAuthToken(token);
         set({
           user,
           role,
@@ -65,7 +67,8 @@ export const useAuthStore = create<AuthState>()(
           hasCompletedOnboarding: role === "coach" ? true : profile.onboardingCompleted,
         });
       },
-      signOut: () =>
+      signOut: () => {
+        setApiAuthToken(null);
         set({
           user: null,
           role: null,
@@ -73,7 +76,8 @@ export const useAuthStore = create<AuthState>()(
           token: null,
           isAuthenticated: false,
           hasCompletedOnboarding: false,
-        }),
+        });
+      },
       completeOnboarding: (patch) =>
         set((state) => ({
           athleteProfile: state.athleteProfile
@@ -85,6 +89,9 @@ export const useAuthStore = create<AuthState>()(
     {
       name: STORAGE_KEYS.auth,
       storage: createJSONStorage(() => AsyncStorage),
+      onRehydrateStorage: () => (state) => {
+        setApiAuthToken(state?.token ?? null);
+      },
     },
   ),
 );

@@ -39,6 +39,27 @@ export function CoachHomeScreen() {
               />
             </HStack>
 
+            <Pressable
+              onPress={() => router.push("/(coach)/exercise-videos")}
+              accessibilityRole="button"
+              accessibilityLabel="Gerenciar vídeos de demonstração dos exercícios"
+            >
+              <Card variant="raised" padding="md">
+                <HStack space={3} align="center">
+                  <View className="w-10 h-10 rounded-lg bg-forest-100 items-center justify-center">
+                    <Ionicons name="videocam-outline" size={20} color={colors.forest[500]} />
+                  </View>
+                  <VStack space={1} className="flex-1">
+                    <Text className="text-sm font-semibold text-text-primary">Vídeos de exercícios</Text>
+                    <Text variant="caption" className="normal-case tracking-normal">
+                      Envie ou vincule demonstrações para seus alunos
+                    </Text>
+                  </VStack>
+                  <Ionicons name="chevron-forward" size={20} color={colors.text.tertiary} />
+                </HStack>
+              </Card>
+            </Pressable>
+
             <VStack space={3}>
               <Text variant="label">Seus alunos</Text>
               {mockStudents.map((s) => (
