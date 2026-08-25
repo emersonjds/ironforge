@@ -1,14 +1,14 @@
-import { useMemo, useState } from "react";
-import { Alert, Platform, Pressable, ScrollView, StatusBar, View } from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import { ActivityIndicator, Alert, Platform, Pressable, ScrollView, StatusBar, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { cssInterop } from "nativewind";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { VStack, HStack, Text } from "@ui/index";
+import { colors } from "@theme/colors";
 import { NumericKeypadSheet, type KeypadValues } from "@features/workout/components/numeric-keypad-sheet";
-import { ExerciseDetailSheet } from "@features/workout/components/exercise-detail-sheet";
 import { RestTimerBar } from "@features/workout/components/rest-timer-bar";
 import { useActiveSessionStore } from "@features/workout/store";
-import { getExercise } from "@features/exercises/data/catalog";
+import { useExercise } from "@entities/exercise";
 import { suggestNextSet } from "@features/workout/lib/progression";
 import { bestE1RM } from "@features/workout/lib/e1rm";
 import { detectPRs } from "@features/workout/lib/pr-detection";
@@ -36,20 +36,30 @@ export function WorkoutLoggerScreen() {
   const endSession = useActiveSessionStore((s) => s.endSession);
   const cancelSession = useActiveSessionStore((s) => s.cancelSession);
   const setsForExercise = useActiveSessionStore((s) => s.setsForExercise);
+  const clearPendingAction = useActiveSessionStore((s) => s.clearPendingAction);
 
   const athleteId = useAuthStore((s) => s.user?.id ?? "user-ricardo");
   const elapsed = useSessionTimer(session?.startedAt ?? null);
   const timer = useRestTimer();
   const [keypadVisible, setKeypadVisible] = useState(false);
-  const [detailVisible, setDetailVisible] = useState(false);
   const [lastPRMessage, setLastPRMessage] = useState<string | null>(null);
 
   const planExercise: PlanExercise | undefined = planDay?.exercises[currentIdx];
-  const exercise = planExercise ? getExercise(planExercise.exerciseId) : undefined;
+
+  useFocusEffect(
+    useCallback(() => {
+      const pending = useActiveSessionStore.getState().pendingAction;
+      if (pending?.type === "openKeypad" && pending.planExerciseId === planExercise?.id) {
+        clearPendingAction();
+        setKeypadVisible(true);
+      }
+    }, [planExercise?.id, clearPendingAction]),
+  );
+  const { exercise, isLoading: exerciseLoading } = useExercise(planExercise?.exerciseId ?? null);
   const supersetPartnerId = planExercise?.isSupersetWith ?? null;
   const supersetPartner =
     (supersetPartnerId ? planDay?.exercises.find((e) => e.id === supersetPartnerId) : null) ?? null;
-  const supersetPartnerExercise = supersetPartner ? getExercise(supersetPartner.exerciseId) : null;
+  const { exercise: supersetPartnerExercise } = useExercise(supersetPartner?.exerciseId ?? null);
 
   const doneSets = planExercise ? setsForExercise(planExercise.id) : [];
 
@@ -79,13 +89,25 @@ export function WorkoutLoggerScreen() {
     movementPattern: activeMovementPattern,
   });
 
-  if (!session || !planDay || !planExercise || !exercise) {
+  if (!session || !planDay || !planExercise) {
     return (
       <View className="flex-1 bg-bg items-center justify-center">
         <Text variant="title">Nenhuma sessão ativa</Text>
         <Pressable onPress={() => router.dismiss()} className="mt-4">
           <Text variant="bodySmall" className="text-text-accent">voltar para home</Text>
         </Pressable>
+      </View>
+    );
+  }
+
+  if (!exercise) {
+    return (
+      <View className="flex-1 bg-bg items-center justify-center">
+        {exerciseLoading ? (
+          <ActivityIndicator color={colors.forest[500]} />
+        ) : (
+          <Text variant="bodySmall">Não foi possível carregar este exercício agora.</Text>
+        )}
       </View>
     );
   }
@@ -241,7 +263,20 @@ export function WorkoutLoggerScreen() {
             <HStack space={2} align="center">
               <Text variant="title" className="text-text-primary flex-1">{exercise.name}</Text>
               <Pressable
-                onPress={() => setDetailVisible(true)}
+                onPress={() =>
+                  router.push({
+                    pathname: "/(workout)/exercise/[planExerciseId]",
+                    params: {
+                      planExerciseId: planExercise.id,
+                      exerciseId: exercise.id,
+                      targetSets: String(planExercise.targetSets),
+                      repRangeMin: String(planExercise.repRangeMin),
+                      repRangeMax: String(planExercise.repRangeMax),
+                      targetRir: String(planExercise.targetRir),
+                      ...(planExercise.coachNote ? { coachNote: planExercise.coachNote } : {}),
+                    },
+                  })
+                }
                 hitSlop={8}
                 accessibilityLabel={`Detalhes de ${exercise.name}`}
                 accessibilityRole="button"
@@ -399,13 +434,6 @@ export function WorkoutLoggerScreen() {
         suggestion={historicalSuggestion}
         onClose={() => setKeypadVisible(false)}
         onConfirm={handleConfirmSet}
-      />
-
-      <ExerciseDetailSheet
-        visible={detailVisible}
-        exercise={exercise}
-        planExercise={planExercise}
-        onClose={() => setDetailVisible(false)}
       />
     </View>
   );

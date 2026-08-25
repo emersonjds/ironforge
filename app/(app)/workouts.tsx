@@ -1,13 +1,13 @@
-import { ScrollView, View, Pressable } from "react-native";
+import { ScrollView, View, Pressable, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { cssInterop } from "nativewind";
 import { router } from "expo-router";
-import { Screen, VStack, HStack, Text, Card, AppHeader } from "@ui/index";
+import { Screen, VStack, HStack, Text, Card, AppHeader, EmptyState } from "@ui/index";
 import { colors } from "@theme/colors";
-import { SEED_PLAN } from "@features/plans/data/seed-plan";
-import { getExercise } from "@features/exercises/data/catalog";
+import { useAssignments, pickActiveAssignment } from "@entities/plan";
+import { useExercises } from "@entities/exercise";
 import { mockUser } from "@shared/mocks";
-import type { Muscle, PlanDay } from "@/types/domain";
+import type { Exercise, Muscle, PlanDay } from "@/types/domain";
 
 cssInterop(ScrollView, { className: "style" });
 cssInterop(View, { className: "style" });
@@ -28,17 +28,25 @@ const MUSCLE_LABEL: Partial<Record<Muscle, string>> = {
   calves: "Panturrilha",
 };
 
-function muscleSummary(day: PlanDay): string {
-  const set = new Set<string>();
-  for (const pe of day.exercises) {
-    const ex = getExercise(pe.exerciseId);
-    const label = ex ? MUSCLE_LABEL[ex.primaryMuscle] : undefined;
-    if (label) set.add(label);
+function muscleSummary(day: PlanDay, byId: Map<string, Exercise>): string {
+  const labels = new Set<string>();
+
+  for (const planExercise of day.exercises) {
+    const label = MUSCLE_LABEL[byId.get(planExercise.exerciseId)?.primaryMuscle as Muscle];
+    if (label) labels.add(label);
   }
-  return Array.from(set).join(" · ");
+
+  return Array.from(labels).join(" · ");
 }
 
 export default function WorkoutsScreen() {
+  const assignments = useAssignments();
+  const exercises = useExercises();
+
+  const plan = pickActiveAssignment(assignments.data ?? []);
+  const byId = new Map((exercises.data ?? []).map((exercise) => [exercise.id, exercise]));
+  const isLoading = assignments.isLoading || exercises.isLoading;
+
   return (
     <Screen edges={["top"]} padded={false}>
       <AppHeader
@@ -52,45 +60,80 @@ export default function WorkoutsScreen() {
           <VStack space={5}>
             <VStack space={1}>
               <Text variant="title">Seu Plano</Text>
-              <Text variant="bodySmall">
-                {SEED_PLAN.name} · {SEED_PLAN.weeks} semanas
-              </Text>
+              {plan ? (
+                <Text variant="bodySmall">
+                  {plan.name} · {plan.weeks} semanas
+                </Text>
+              ) : null}
             </VStack>
 
-            <VStack space={3}>
-              {SEED_PLAN.days.map((day) => {
-                const totalSets = day.exercises.reduce((s, pe) => s + pe.targetSets, 0);
-                return (
-                  <Pressable
-                    key={day.id}
-                    onPress={() => router.push("/(workout)/preview")}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Treino ${day.name}`}
-                    className="active:opacity-80"
-                  >
-                    <Card variant="raised" padding="lg">
-                      <HStack space={4} align="center">
-                        <View className="h-12 w-12 rounded-xl bg-forest-500 items-center justify-center">
-                          <Text className="font-display text-lg font-black text-white leading-none">
-                            {day.slotLabel}
-                          </Text>
-                        </View>
-                        <VStack space={1} className="flex-1">
-                          <Text className="text-base font-bold text-text-primary">{day.name}</Text>
-                          <Text variant="bodySmall" numberOfLines={1}>
-                            {muscleSummary(day)}
-                          </Text>
-                          <Text variant="caption" className="normal-case tracking-normal mt-0.5">
-                            {day.exercises.length} exercícios · {totalSets} séries
-                          </Text>
-                        </VStack>
-                        <Ionicons name="chevron-forward" size={20} color={colors.text.tertiary} />
-                      </HStack>
-                    </Card>
-                  </Pressable>
-                );
-              })}
-            </VStack>
+            {isLoading ? (
+              <View className="py-16 items-center">
+                <ActivityIndicator color={colors.forest[500]} />
+              </View>
+            ) : assignments.isError ? (
+              <EmptyState
+                title="Não foi possível carregar seu plano"
+                description="Verifique sua conexão e tente de novo."
+                actionLabel="Tentar de novo"
+                onAction={() => assignments.refetch()}
+              />
+            ) : !plan ? (
+              <EmptyState
+                title="Nenhum plano ativo"
+                description="Seu personal ainda não enviou uma ficha para você."
+              />
+            ) : (
+              <VStack space={3}>
+                {plan.days.map((day) => {
+                  const totalSets = day.exercises.reduce((sum, pe) => sum + pe.targetSets, 0);
+                  const summary = muscleSummary(day, byId);
+
+                  return (
+                    <Pressable
+                      key={day.id}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/(workout)/preview",
+                          params: { dayId: day.id },
+                        })
+                      }
+                      accessibilityRole="button"
+                      accessibilityLabel={`Treino ${day.name}, ${day.exercises.length} exercícios`}
+                      className="active:opacity-80"
+                    >
+                      <Card variant="raised" padding="lg">
+                        <HStack space={4} align="center">
+                          <View className="h-12 w-12 rounded-xl bg-forest-500 items-center justify-center">
+                            <Text className="font-display text-lg font-black text-white leading-none">
+                              {day.slotLabel}
+                            </Text>
+                          </View>
+                          <VStack space={1} className="flex-1">
+                            <Text className="text-base font-bold text-text-primary">
+                              {day.name}
+                            </Text>
+                            {summary ? (
+                              <Text variant="bodySmall" numberOfLines={1}>
+                                {summary}
+                              </Text>
+                            ) : null}
+                            <Text variant="caption" className="normal-case tracking-normal mt-0.5">
+                              {day.exercises.length} exercícios · {totalSets} séries
+                            </Text>
+                          </VStack>
+                          <Ionicons
+                            name="chevron-forward"
+                            size={20}
+                            color={colors.text.tertiary}
+                          />
+                        </HStack>
+                      </Card>
+                    </Pressable>
+                  );
+                })}
+              </VStack>
+            )}
           </VStack>
         </View>
       </ScrollView>

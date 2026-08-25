@@ -26,12 +26,21 @@ interface SessionWithSets extends Session {
   sets: SetLog[];
 }
 
+export interface PendingAction {
+  type: "openKeypad";
+  planExerciseId: string;
+  setIndex: number;
+}
+
 interface ActiveSessionState {
   session: SessionWithSets | null;
   planDay: PlanDay | null;
   currentExerciseIndex: number;
+  pendingAction: PendingAction | null;
 
   startSession: (planDay: PlanDay, athleteId: string, assignedPlanId?: string) => void;
+  setPendingAction: (action: PendingAction) => void;
+  clearPendingAction: () => void;
   logSet: (input: DraftSetInput) => SetLog;
   removeLastSet: (planExerciseId: string) => void;
   setExerciseIndex: (index: number) => void;
@@ -49,6 +58,10 @@ export const useActiveSessionStore = create<ActiveSessionState>()(
       session: null,
       planDay: null,
       currentExerciseIndex: 0,
+      pendingAction: null,
+
+      setPendingAction: (action) => set({ pendingAction: action }),
+      clearPendingAction: () => set({ pendingAction: null }),
 
       startSession: (planDay, athleteId, assignedPlanId) => {
         const session: SessionWithSets = {
@@ -168,7 +181,7 @@ export const useActiveSessionStore = create<ActiveSessionState>()(
         const planDayResult = p.planDay ? PlanDaySchema.safeParse(p.planDay) : null;
         const valid = sessionResult?.success && planDayResult?.success;
         if (!valid) {
-          return { ...current, session: null, planDay: null, currentExerciseIndex: 0 };
+          return { ...current, session: null, planDay: null, currentExerciseIndex: 0, pendingAction: null };
         }
         return {
           ...current,
@@ -176,6 +189,7 @@ export const useActiveSessionStore = create<ActiveSessionState>()(
           planDay: planDayResult.data,
           currentExerciseIndex:
             typeof p.currentExerciseIndex === "number" ? p.currentExerciseIndex : 0,
+          pendingAction: null,
         };
       },
     },
