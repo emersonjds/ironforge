@@ -38,6 +38,14 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 200
         }
+      ],
+      "expo-video",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permita acesso à galeria para enviar vídeos de demonstração dos exercícios.",
+          "cameraPermission": "Permita acesso à câmera para gravar vídeos de demonstração dos exercícios."
+        }
       ]
     ],
     "experiments": {
