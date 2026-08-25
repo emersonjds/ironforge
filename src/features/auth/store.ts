@@ -3,7 +3,9 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { STORAGE_KEYS } from "@shared/lib/storage/keys";
 import { setApiAuthToken } from "@shared/lib/api/auth-token";
+import { ApiError, setUnauthorizedHandler } from "@shared/lib/api/client";
 import { mockRelation } from "@shared/mocks";
+import { login, fetchMe, type AuthUser } from "./api";
 import type { User } from "@/types/domain";
 import type { AthleteProfile } from "@/types/domain";
 
@@ -28,7 +30,19 @@ interface AuthState {
     role?: UserRole,
   ) => void;
   signOut: () => void;
+  setUser: (user: User) => void;
   completeOnboarding: (patch: Partial<AthleteProfile>) => void;
+  loginWithPassword: (email: string, password: string, role: UserRole) => Promise<void>;
+}
+
+function toDomainUser(user: AuthUser): User {
+  return {
+    id: user.id,
+    email: user.email,
+    displayName: user.displayName,
+    avatarUrl: user.avatarUrl,
+    createdAt: user.createdAt,
+  };
 }
 
 const DEFAULT_ATHLETE_PROFILE: Omit<AthleteProfile, "userId" | "coachId"> = {
@@ -43,7 +57,7 @@ const DEFAULT_ATHLETE_PROFILE: Omit<AthleteProfile, "userId" | "coachId"> = {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       role: null,
       athleteProfile: null,
@@ -78,6 +92,7 @@ export const useAuthStore = create<AuthState>()(
           hasCompletedOnboarding: false,
         });
       },
+      setUser: (user) => set({ user }),
       completeOnboarding: (patch) =>
         set((state) => ({
           athleteProfile: state.athleteProfile
@@ -85,13 +100,58 @@ export const useAuthStore = create<AuthState>()(
             : null,
           hasCompletedOnboarding: true,
         })),
+
+      loginWithPassword: async (email, password, role) => {
+        let response;
+        try {
+          response = await login(email, password);
+        } catch (err) {
+          if (err instanceof ApiError && err.status === 401) {
+            throw new Error("E-mail ou senha inválidos.");
+          }
+          throw new Error("Não foi possível entrar agora. Verifique sua conexão.");
+        }
+
+        const { accessToken, user } = response;
+        const domainUser = toDomainUser(user);
+        // Backend real ainda não modela onboarding — um aluno que já loga com
+        // credenciais reais já tem plano do personal, então não faz sentido
+        // mandá-lo para o onboarding mobile.
+        const athleteProfile: AthleteProfile | undefined =
+          role === "athlete"
+            ? { userId: user.id, coachId: user.coachId, ...DEFAULT_ATHLETE_PROFILE, onboardingCompleted: true }
+            : undefined;
+
+        get().signIn(domainUser, accessToken, athleteProfile, role);
+      },
     }),
     {
       name: STORAGE_KEYS.auth,
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state) => {
         setApiAuthToken(state?.token ?? null);
+        if (state?.token) void validateSession();
       },
     },
   ),
 );
+
+setUnauthorizedHandler(() => useAuthStore.getState().signOut());
+
+/**
+ * Roda no boot quando há token persistido: confirma com a API que a sessão
+ * ainda é válida e atualiza o usuário com a fonte de verdade do backend.
+ * Token inválido derruba a sessão local (evita reabrir o app "logado" com
+ * um usuário que a API não reconhece mais).
+ */
+export async function validateSession(): Promise<void> {
+  const { token, signOut, setUser } = useAuthStore.getState();
+  if (!token) return;
+
+  try {
+    const me = await fetchMe();
+    setUser(toDomainUser(me));
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 401) signOut();
+  }
+}

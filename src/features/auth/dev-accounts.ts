@@ -1,5 +1,3 @@
-import { mockRelation } from "@shared/mocks";
-import type { AthleteProfile, User } from "@/types/domain";
 import type { UserRole } from "./store";
 
 export interface DevAccount {
@@ -7,82 +5,34 @@ export interface DevAccount {
   label: string;
   hint: string;
   role: UserRole;
-  user: User;
-  athleteProfile: AthleteProfile;
+  email: string;
+  password: string;
 }
 
-const CREATED_AT = "2024-01-15T09:00:00.000Z";
-
-const baseProfile = {
-  goal: "hypertrophy",
-  experienceLevel: "intermediate",
-  unitSystem: "kg",
-  bodyweightKg: null,
-  restrictions: [],
-  videoPerformerPref: "any",
-} as const satisfies Omit<AthleteProfile, "userId" | "coachId" | "onboardingCompleted">;
-
 /**
- * Contas de teste do modo dev. Nunca são expostas em build de produção —
- * o DevLoginPicker só renderiza sob `__DEV__`.
+ * Atalho de login para desenvolvimento: autentica de verdade na API com as
+ * credenciais de uma conta semeada no backend. Só renderiza sob `__DEV__`.
+ *
+ * ponytail: contas mock que não existem no backend real foram removidas —
+ * login agora é real (POST /auth/login), então um botão para usuário
+ * inexistente só resultaria em "credenciais inválidas". Adicione aqui outras
+ * contas conforme forem semeadas.
  */
 export const DEV_ACCOUNTS: DevAccount[] = [
   {
-    id: "athlete",
-    label: "Ricardo — Aluno",
-    hint: "onboarding pronto, vinculado à Amanda",
+    id: "athlete-demo",
+    label: "Aluno demo",
+    hint: "aluno@ironforge.test",
     role: "athlete",
-    user: {
-      id: mockRelation.athleteId,
-      email: "ricardo@ironforge.dev",
-      displayName: "Ricardo",
-      avatarUrl: null,
-      createdAt: CREATED_AT,
-    },
-    athleteProfile: {
-      userId: mockRelation.athleteId,
-      coachId: mockRelation.coachId,
-      onboardingCompleted: true,
-      ...baseProfile,
-    },
+    email: "aluno@ironforge.test",
+    password: "demo-ironforge-2026",
   },
   {
-    id: "athlete-new",
-    label: "Aluno novo",
-    hint: "cai no onboarding, sem professor",
-    role: "athlete",
-    user: {
-      id: "user-novo",
-      email: "novo@ironforge.dev",
-      displayName: "Novato",
-      avatarUrl: null,
-      createdAt: CREATED_AT,
-    },
-    athleteProfile: {
-      userId: "user-novo",
-      coachId: null,
-      onboardingCompleted: false,
-      ...baseProfile,
-      experienceLevel: "beginner",
-    },
-  },
-  {
-    id: "coach",
-    label: "Amanda — Professora",
-    hint: "painel do professor",
+    id: "coach-demo",
+    label: "Personal demo",
+    hint: "personal@ironforge.test",
     role: "coach",
-    user: {
-      id: mockRelation.coachId,
-      email: "amanda@ironforge.dev",
-      displayName: "Amanda",
-      avatarUrl: null,
-      createdAt: CREATED_AT,
-    },
-    athleteProfile: {
-      userId: mockRelation.coachId,
-      coachId: null,
-      onboardingCompleted: true,
-      ...baseProfile,
-    },
+    email: "personal@ironforge.test",
+    password: "demo-ironforge-2026",
   },
 ];

@@ -14,39 +14,21 @@ export function SignInScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const signIn = useAuthStore((s) => s.signIn);
+  const loginWithPassword = useAuthStore((s) => s.loginWithPassword);
   const { role: roleParam } = useLocalSearchParams<{ role?: string }>();
   const role = roleParam === "coach" ? "coach" : "athlete";
 
   async function handleSignIn() {
     setLoading(true);
     setError(null);
-    // TODO: auth real via features/auth/api.ts
-    await new Promise((r) => setTimeout(r, 500));
-    signIn(
-      {
-        id: "mock-user-id",
-        email,
-        displayName: email.split("@")[0] ?? "lifter",
-        avatarUrl: null,
-        createdAt: new Date().toISOString(),
-      },
-      "mock-token",
-      {
-        userId: "mock-user-id",
-        coachId: null,
-        goal: "hypertrophy",
-        experienceLevel: "intermediate",
-        unitSystem: "kg",
-        bodyweightKg: null,
-        restrictions: [],
-        videoPerformerPref: "any",
-        onboardingCompleted: true,
-      },
-      role,
-    );
-    setLoading(false);
-    router.replace(role === "coach" ? "/(coach)" : "/(app)");
+    try {
+      await loginWithPassword(email, password, role);
+      router.replace(role === "coach" ? "/(coach)" : "/(app)");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível entrar agora.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

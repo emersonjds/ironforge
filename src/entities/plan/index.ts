@@ -14,3 +14,6 @@ export type {
 } from "./schema";
 export { resolveNextSession } from "./lib/resolve-next-session";
 export type { ResolvedSession } from "./lib/resolve-next-session";
+export { pickActiveAssignment } from "./lib/pick-active-assignment";
+export { fetchAssignments } from "./api";
+export { useAssignments } from "./hooks/use-assignments";

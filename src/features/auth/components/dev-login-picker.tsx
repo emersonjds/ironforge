@@ -15,13 +15,23 @@ cssInterop(View, { className: "style" });
  */
 export function DevLoginPicker() {
   const [open, setOpen] = useState(false);
-  const signIn = useAuthStore((s) => s.signIn);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const loginWithPassword = useAuthStore((s) => s.loginWithPassword);
 
   if (!__DEV__) return null;
 
-  function enterAs(account: DevAccount) {
-    signIn(account.user, `dev-token-${account.id}`, account.athleteProfile, account.role);
-    router.replace("/");
+  async function enterAs(account: DevAccount) {
+    setLoadingId(account.id);
+    setError(null);
+    try {
+      await loginWithPassword(account.email, account.password, account.role);
+      router.replace("/");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível entrar agora.");
+    } finally {
+      setLoadingId(null);
+    }
   }
 
   return (
@@ -47,16 +57,24 @@ export function DevLoginPicker() {
             <Pressable
               key={account.id}
               onPress={() => enterAs(account)}
+              disabled={loadingId !== null}
               accessibilityRole="button"
               accessibilityLabel={`Entrar como ${account.label}`}
               className="bg-bg-sunken border border-border rounded-lg px-4 py-3 active:opacity-70"
             >
-              <Text className="text-text-primary text-sm font-semibold">{account.label}</Text>
+              <Text className="text-text-primary text-sm font-semibold">
+                {loadingId === account.id ? "Entrando..." : account.label}
+              </Text>
               <Text variant="caption" className="normal-case tracking-normal">
                 {account.hint}
               </Text>
             </Pressable>
           ))}
+          {error ? (
+            <Text className="text-error text-xs" accessibilityLiveRegion="polite">
+              {error}
+            </Text>
+          ) : null}
         </VStack>
       ) : null}
     </VStack>
