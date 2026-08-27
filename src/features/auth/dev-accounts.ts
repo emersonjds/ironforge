@@ -18,7 +18,7 @@ export interface DevAccount {
  * inexistente só resultaria em "credenciais inválidas". Adicione aqui outras
  * contas conforme forem semeadas.
  */
-const DEV_ACCOUNT_PASSWORD = process.env.EXPO_PUBLIC_DEV_ACCOUNT_PASSWORD;
+const DEV_ACCOUNT_PASSWORD = __DEV__ ? process.env.EXPO_PUBLIC_DEV_ACCOUNT_PASSWORD : undefined;
 
 export const DEV_ACCOUNTS: DevAccount[] = DEV_ACCOUNT_PASSWORD
   ? [

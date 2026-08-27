@@ -21,6 +21,7 @@ Micro commits, um por contexto, **Conventional Commits** em inglês (`feat(auth)
 
 ### Testes
 Toda entrega vem com teste. Não existe "teste depois".
+**Cobertura mínima de 90% em todas as quatro métricas** — statements, branches, functions e lines. Não é meta, é regra: o limiar fica configurado no runner de teste, então a suíte **falha** abaixo disso e o PR não passa. `branches` é a métrica que mais escapa e a que mais importa — é onde estão os caminhos de erro.
 - **Backend:** testes de **integração** contra banco real, exercitando o fluxo ponta a ponta (rota → validação → auth → transação → SQL). Unitário só para lógica pura e ramificada.
 - **Front e mobile:** unitário (Vitest / Jest) + **integração com MSW** para tudo que fala com a API + **e2e com Playwright** quando o fluxo é crítico.
 
