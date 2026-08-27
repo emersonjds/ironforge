@@ -1,5 +1,25 @@
 export { SessionSchema, SetLogSchema, SessionWithSetsSchema } from "./schema";
 export type { Session, SetLog, SessionWithSets } from "./schema";
+export {
+  toApiSetIndex,
+  fromApiSetIndex,
+  mapApiSessionToLocal,
+  mapApiSetToLocal,
+  startSessionRequest,
+  finishSessionRequest,
+  logSetRequest,
+  updateSetRequest,
+  deleteSetRequest,
+  fetchResumableSession,
+} from "./api";
+export type {
+  ApiSession,
+  ApiSetLog,
+  ApiSessionDetail,
+  StartSessionInput,
+  FinishSessionInput,
+  UpdateSetInput,
+} from "./api";
 export { epley1RM, brzycki1RM, estimated1RM, bestE1RM } from "./lib/e1rm";
 export type { E1RMFormula } from "./lib/e1rm";
 export { detectPRs } from "./lib/pr-detection";
