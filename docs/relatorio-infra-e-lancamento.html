@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>IronForge — Infraestrutura e Pendências de Lançamento</title>
+<style>
+@page { size: A4; margin: 18mm 16mm 20mm 16mm; }
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+  font-size: 10.2pt; line-height: 1.55; color: #1a1a1e; margin: 0;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+h1 { font-size: 20pt; margin: 0 0 4px; letter-spacing: -0.4px; }
+h2 {
+  font-size: 14pt; margin: 26px 0 10px; padding-bottom: 6px;
+  border-bottom: 2px solid #E8590C; letter-spacing: -0.3px;
+  break-after: avoid; page-break-after: avoid;
+}
+h3 { font-size: 11.5pt; margin: 18px 0 6px; color: #14141a; break-after: avoid; page-break-after: avoid; }
+h4 { font-size: 10.4pt; margin: 14px 0 4px; color: #3a3a44; break-after: avoid; }
+p { margin: 0 0 8px; }
+ul, ol { margin: 0 0 10px; padding-left: 20px; }
+li { margin-bottom: 3px; }
+code {
+  font-family: "SF Mono", Menlo, monospace; font-size: 8.8pt;
+  background: #f2f2f5; padding: 1px 4px; border-radius: 3px; color: #b02a00;
+}
+table {
+  width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: 8.9pt;
+  break-inside: auto;
+}
+th {
+  background: #1a1a1e; color: #fff; text-align: left; padding: 6px 8px;
+  font-weight: 600; font-size: 8.6pt;
+}
+td { padding: 5px 8px; border-bottom: 1px solid #e4e4ea; vertical-align: top; }
+tr:nth-child(even) td { background: #fafafc; }
+tr { break-inside: avoid; page-break-inside: avoid; }
+.capa {
+  height: 247mm; display: flex; flex-direction: column; justify-content: center;
+  break-after: page; page-break-after: always;
+}
+.capa .marca { font-size: 9pt; letter-spacing: 3px; color: #E8590C; font-weight: 700; margin-bottom: 14px; }
+.capa h1 { font-size: 30pt; line-height: 1.12; margin-bottom: 14px; }
+.capa .sub { font-size: 12pt; color: #55555f; max-width: 130mm; margin-bottom: 30px; }
+.capa .meta { font-size: 9pt; color: #77777f; border-top: 1px solid #ddd; padding-top: 12px; }
+.destaque {
+  background: #FFF4E6; border-left: 4px solid #E8590C; padding: 10px 14px;
+  margin: 12px 0; break-inside: avoid; page-break-inside: avoid;
+}
+.destaque strong { color: #B02A00; }
+.alerta {
+  background: #FFF5F5; border-left: 4px solid #E03131; padding: 10px 14px;
+  margin: 12px 0; break-inside: avoid; page-break-inside: avoid;
+}
+.ok { background: #EBFBEE; border-left: 4px solid #2F9E44; padding: 10px 14px; margin: 12px 0; break-inside: avoid; }
+.veredito {
+  background: #14141a; color: #fff; padding: 12px 16px; margin: 14px 0;
+  border-radius: 4px; break-inside: avoid; page-break-inside: avoid;
+}
+.veredito strong { color: #FFA94D; }
+.veredito code { background: #2a2a34; color: #FFC078; }
+.quebra { break-before: page; page-break-before: always; }
+.tag {
+  display: inline-block; font-size: 7.6pt; font-weight: 700; padding: 1px 6px;
+  border-radius: 3px; vertical-align: 1px; letter-spacing: 0.3px;
+}
+.t-bloq { background: #E03131; color: #fff; }
+.t-alta { background: #F76707; color: #fff; }
+.t-media { background: #FAB005; color: #3d2c00; }
+.t-baixa { background: #ADB5BD; color: #fff; }
+.sumario ol { padding-left: 18px; }
+.sumario li { margin-bottom: 5px; font-size: 10pt; }
+.fonte { font-size: 8pt; color: #88888f; font-style: italic; margin-top: -6px; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<div class="capa">
+  <div class="marca">IRONFORGE</div>
+  <h1>Infraestrutura de produção<br>e pendências de lançamento</h1>
+  <div class="sub">Onde hospedar a API, o banco e os arquivos de mídia, com análise de plano gratuito e pago — e o levantamento completo do que falta para o produto ir ao ar.</div>
+  <div class="meta">
+    Relatório técnico · 27 de agosto de 2026<br>
+    Escopo: <strong>ironforge</strong> (app do aluno) · <strong>ironforge-api</strong> (backend) · <strong>ironforge-web</strong> (painel do personal)
+  </div>
+</div>
+
+<h2 style="margin-top:0">1. Resumo para decisão</h2>
+
+<p>Este relatório responde duas perguntas: <strong>onde subir a infraestrutura</strong> e <strong>o que ainda falta</strong>. As duas respostas curtas estão aqui; o resto do documento é a fundamentação.</p>
+<div class="veredito">
+<strong>Infraestrutura:</strong> Fly.io na região <code>gru</code> (São Paulo) + Neon Postgres em <code>sa-east-1</code> + Cloudflare R2 para mídia.<br>
+<strong>Custo:</strong> <strong>US$ 10,77/mês (R$ 58)</strong> no lançamento · <strong>US$ 102,82/mês (R$ 555)</strong> com 1.000 alunos.<br>
+<strong>Sobre o gratuito:</strong> existe, economiza R$ 44/mês, e <strong>não vale a pena</strong> — a seção 5 mostra o porquê com número.<br>
+<strong>Pendências:</strong> 35 itens, sendo <strong>16 bloqueadores</strong> de lançamento. O maior deles: o app não grava carga no servidor.
+</div>
+
+<p>O ponto de partida é melhor do que costuma ser nesse estágio. Três aplicações funcionais, 313 testes passando, zero erro de tipo ou de lint. <strong>O trabalho que falta é majoritariamente de ligação e operação</strong>, não de construção.</p>
+
+<h2 class="quebra">2. Hospedagem da API</h2>
+
+<p>Comparação com preço confirmado nas páginas oficiais em 27 de agosto de 2026. Escala de referência: 50 personais e 1.000 alunos.</p>
+
+<table>
+<tr><th style="width:20%"></th><th style="width:20%">Fly.io</th><th style="width:15%">Railway</th><th style="width:15%">Render</th><th style="width:15%">Hetzner</th><th style="width:15%">DigitalOcean</th></tr>
+<tr><td><strong>Instância pequena</strong></td><td><strong>US$ 5,16</strong><br>512 MB em <code>gru</code></td><td>US$ 5 + uso de RAM e vCPU</td><td>US$ 7<br>(Starter)</td><td>€5,49<br>(menor é 4 GB)</td><td>US$ 6</td></tr>
+<tr><td><strong>Em 1.000 alunos</strong></td><td><strong>US$ 19</strong></td><td>~US$ 40–45</td><td>~US$ 50–80</td><td>~US$ 13</td><td>US$ 12</td></tr>
+<tr><td><strong>Região São Paulo</strong></td><td><strong>SIM</strong></td><td>não</td><td>não</td><td>não</td><td>não</td></tr>
+<tr><td><strong>Release command</strong></td><td>sim</td><td>sim</td><td>só no pago</td><td>não — VPS puro</td><td>sim</td></tr>
+<tr><td><strong>Rollback</strong></td><td>por linha de comando</td><td>botão</td><td>botão, o melhor</td><td>nenhum</td><td>botão</td></tr>
+</table>
+
+<div class="destaque">
+<strong>O cálculo que decide, e não é o preço.</strong> A camada de multi-tenancy (<code>withTenant</code>) custa <strong>4 idas ao banco por requisição</strong> — <code>BEGIN</code>, <code>set_config</code>, a consulta, <code>COMMIT</code>. Com o banco em São Paulo, qualquer plataforma sem região no Brasil paga esses quatro trajetos cruzando o hemisfério: <strong>cerca de 130 ms × 4 ≈ 520 ms por requisição</strong>. Isso não é preferência, é aritmética.
+<br><br>
+O Fly em <code>gru</code> custa <strong>16 centavos de dólar a mais</strong> por mês que o Railway e coloca API e banco no mesmo metrô. Por dezesseis centavos não há discussão.
+</div>
+
+<p><strong>Hetzner e DigitalOcean saem por dois motivos combinados, nenhum deles preço:</strong> não têm região no Brasil, e o Hetzner ainda exige que você construa deploy, TLS, health check, release command e rollback à mão. Para fundador solo, esse é o item mais caro do relatório — o seu tempo.</p>
+
+<p class="fonte">Alertas apurados: o free tier do Fly acabou para contas novas; a região <code>gru</code> tem sobretaxa de 61,5% sobre a Virgínia (já embutida nos US$ 5,16); o Hetzner aplicou reajuste de até 3× em junho de 2026; o Render Free dorme após 15 minutos.</p>
+
+<h2>3. Banco de dados</h2>
+
+<table>
+<tr><th style="width:20%"></th><th style="width:18%">Neon</th><th style="width:16%">Supabase</th><th style="width:16%">Fly Postgres</th><th style="width:15%">Railway</th><th style="width:15%">AWS RDS</th></tr>
+<tr><td><strong>Mês 1</strong></td><td><strong>~US$ 5</strong></td><td>US$ 25</td><td>US$ 38</td><td>~US$ 7</td><td>~US$ 27</td></tr>
+<tr><td><strong>1.000 alunos</strong></td><td><strong>~US$ 28</strong></td><td>~US$ 25–30</td><td>~US$ 41</td><td>~US$ 18</td><td>~US$ 27</td></tr>
+<tr><td><strong>Região Brasil</strong></td><td><strong>sim</strong></td><td>sim</td><td>sim</td><td>não confirmado</td><td>sim</td></tr>
+<tr><td><strong>Backup / PITR</strong></td><td>7 dias por centavos</td><td><strong>PITR custa US$ 100/mês</strong></td><td>incluso</td><td>~4 semanas</td><td>incluso, até 35 dias</td></tr>
+<tr><td><strong>Mensalidade fixa</strong></td><td><strong>nenhuma</strong></td><td>US$ 25</td><td>US$ 38</td><td>por uso</td><td>por hora</td></tr>
+</table>
+
+<p><strong>O Supabase perde por aritmética, não por ideologia:</strong> o PITR dele custa US$ 100/mês, quatro vezes a pilha inteira aqui recomendada. E o pacote que justificaria o plano Pro — Auth, Storage, Realtime — já está resolvido no código: autenticação própria com JWT e Argon2, storage próprio com SDK S3.</p>
+
+<p>O Neon cortou preço depois da aquisição pela Databricks: storage caiu 80% e compute caiu de 15 a 25%. E o pooler dele hoje já suporta prepared statements, o que remove uma armadilha de configuração que existia.</p>
+
+<div class="alerta">
+<strong>Não use o plano gratuito do Neon.</strong> São 100 CU-h por mês; no menor passo de compute isso dá cerca de 400 horas, contra as 730 de um mês. Estourou no dia 20 e a mensagem é <em>"your compute is suspended until the next billing period"</em> — <strong>o banco para de aceitar escrita e o aluno não consegue registrar a série</strong>. Sem degradação gradual: é um interruptor. Grátis com penhasco custa mais que US$ 5.
+</div>
+
+<h2 class="quebra">4. Fotos e vídeos — a pergunta do egress</h2>
+
+<p>É aqui que a escolha errada cobra caro, e a diferença não aparece no primeiro mês.</p>
+
+<table>
+<tr><th style="width:22%"></th><th style="width:20%">Cloudflare R2</th><th style="width:20%">AWS S3 (SP)</th><th style="width:19%">Backblaze B2</th><th style="width:19%">Supabase</th></tr>
+<tr><td><strong>Storage US$/GB</strong></td><td>0,015</td><td>0,0405</td><td><strong>0,00695</strong></td><td>0,0213</td></tr>
+<tr><td><strong>Egress US$/GB</strong></td><td><strong>ZERO, sempre</strong></td><td>0,15</td><td>0,01</td><td>0,09</td></tr>
+<tr><td><strong>Free tier</strong></td><td>10 GB/mês</td><td>100 GB de egress</td><td>10 GB</td><td>1 GB</td></tr>
+<tr><td><strong>CDN incluída</strong></td><td><strong>sim</strong></td><td>não</td><td>via parceria</td><td>sim</td></tr>
+<tr><td><strong>Compatível com o código atual</strong></td><td><strong>sim, zero mudança</strong></td><td>sim</td><td>sim</td><td>sim</td></tr>
+</table>
+
+<h3>A conta de egress com os números reais do projeto</h3>
+<p class="fonte">Premissas do ADR 0007: 22 visualizações por aluno/mês, 70% do acervo em YouTube e 30% em upload próprio, clipe de 720p a 25 MB.</p>
+
+<table>
+<tr><th style="width:22%">Escala</th><th style="width:16%">Armazenado</th><th style="width:16%">Egress/mês</th><th style="width:15%">R2</th><th style="width:15%">S3</th><th style="width:16%">B2</th></tr>
+<tr><td>Mês 1 (~20 usuários)</td><td>0,45 GB</td><td>2,8 GB</td><td><strong>US$ 0</strong></td><td>US$ 0</td><td>US$ 0</td></tr>
+<tr><td>200 usuários</td><td>4,5 GB</td><td>28 GB</td><td><strong>US$ 0</strong></td><td>US$ 0</td><td>US$ 0</td></tr>
+<tr><td><strong>1.000 alunos</strong></td><td>7,5 GB</td><td>165 GB</td><td><strong>US$ 0</strong></td><td>US$ 10,05</td><td>US$ 1,48</td></tr>
+<tr><td>10.000 alunos</td><td>75 GB</td><td>1,65 TB</td><td><strong>US$ 0,98</strong></td><td><strong>US$ 233</strong></td><td>US$ 15</td></tr>
+</table>
+
+<div class="destaque">
+<strong>O ponto de virada é 606 alunos ativos.</strong> É onde os 100 GB de egress gratuito do S3 acabam. Antes disso, R2 e S3 empatam em zero e escolher por preço é escolher por nada. Depois disso, o S3 passa a cobrar US$ 0,15 por GB e o R2 continua cobrando zero — é a curva que leva a US$ 233/mês com 10 mil alunos.
+</div>
+
+<p><strong>O Backblaze é duas vezes mais barato no storage e perde assim mesmo:</strong> precisa de CDN de terceiro para ter latência decente no Brasil, e o storage é a linha irrelevante da conta — US$ 0,11 por mês em 7,5 GB. Otimizar pela metade uma linha de onze centavos não é economia, é distração.</p>
+
+<h3>Duas correções importantes na entrega de mídia</h3>
+
+<p><strong>a) Aponte um domínio seu para o bucket desde o primeiro dia.</strong> Se URLs em <code>*.r2.cloudflarestorage.com</code> vazarem para o app, para o banco ou para cache de cliente, trocar de provedor vira reescrita de URL. Com domínio próprio, virar as costas para o R2 é <strong>uma mudança de DNS</strong>.</p>
+
+<p><strong>b) URL assinada derrota a CDN.</strong> Cada assinatura é única na query string, então toda requisição é cache miss e bate na origem em vez do ponto de presença de São Paulo. Como o egress do R2 é grátis, isso não custa dinheiro — <strong>custa latência, exatamente na academia com rede ruim.</strong> A solução é gratuita e o modelo de dados já a permite: vídeo do catálogo da plataforma servido <strong>público, sem assinatura</strong>, para cachear na borda; vídeo do personal continua assinado.</p>
+
+<h3>Vídeo: arquivo cru ou serviço de streaming?</h3>
+
+<table>
+<tr><th style="width:25%"></th><th style="width:20%">MP4 cru do R2</th><th style="width:18%">Cloudflare Stream</th><th style="width:18%">Mux</th><th style="width:19%">bunny.net</th></tr>
+<tr><td><strong>Custo em 1.000 alunos</strong></td><td><strong>US$ 0</strong></td><td>US$ 16,20</td><td>US$ 12,00</td><td>~US$ 5</td></tr>
+<tr><td><strong>HLS adaptativo</strong></td><td>não</td><td>sim</td><td>sim</td><td>sim</td></tr>
+</table>
+
+<p><strong>Servir MP4 cru do R2 agora. Não contrate serviço de vídeo para lançar.</strong> A razão não é preço — US$ 12 a 16 por mês não quebram ninguém. É que <strong>70% do acervo é YouTube por decisão de arquitetura</strong>, e o YouTube já faz bitrate adaptativo de graça. Você pagaria transcodificação para servir os 30% restantes de um acervo que no mês 1 tem 0,45 GB.</p>
+
+<div class="alerta">
+<strong>Mas o MP4 cru tem uma condição inegociável: <code>-movflags +faststart</code>.</strong> Um MP4 sem o átomo <code>moov</code> no início força o player a baixar o arquivo <strong>inteiro</strong> antes do primeiro quadro. Com faststart, o player começa a tocar em segundos. É uma flag, é grátis, e é a diferença entre "funciona" e "não funciona" no 3G de um subsolo de academia. <strong>Verificar se o codificador do app já emite faststart — se não emitir, é bug de lançamento, não otimização.</strong>
+</div>
+
+<p><strong>Gatilho para contratar streaming depois:</strong> quando a telemetria mostrar <strong>P75 de tempo até o primeiro quadro acima de 3 segundos</strong>, ou abandono de vídeo acima de 20%. Não quando a conta doer — ela não vai doer. Nessa hora, bunny.net por ~US$ 5/mês. O contrato de API não muda: os campos <code>hlsUrl</code> e <code>durationSeconds</code> já estão reservados.</p>
+
+<h3>Fotos</h3>
+
+<p><strong>Mesmo bucket, prefixos diferentes.</strong> O código já resolveu isso sem perceber: <code>STORAGE_BUCKET</code> é uma variável só, e as chaves já são hierárquicas (<code>coaches/{id}/videos/{id}.ext</code>). Avatar de personal, avatar de aluno e thumbnail de exercício entram no mesmo padrão sem tocar em código. Bucket separado exigiria um segundo cliente S3, um segundo conjunto de credenciais e um segundo caminho de configuração, sem um segundo caso concreto que justifique.</p>
+
+<p><strong>Renomear o bucket de <code>ironforge-videos</code> para <code>ironforge-media</code> antes do primeiro objeto entrar.</strong> É grátis agora e chato depois.</p>
+
+<p><strong>Redimensionamento: no cliente, na hora do upload.</strong> O app já tem <code>expo-image-picker</code> e <code>expo-image</code>; o arquivo que sai do celular já é o final. Zero CPU no servidor, zero fornecedor novo, zero fila. Usar <code>sharp</code> no backend criaria um problema de infraestrutura — event loop bloqueado, risco de estouro de memória, binário nativo complicando a imagem Docker — para resolver um problema que não existe.</p>
+
+<p><strong>A regra que evita refazer isso em seis meses:</strong> guardar <strong>uma</strong> versão de cada imagem, no maior tamanho que algum dia será exibido (avatar 512 px, thumbnail 720 px). O <code>expo-image</code> reduz na tela de graça. Avatar de 512 px em JPEG dá ~40 KB; mil alunos são 40 MB, irrelevante. E no dia em que quiser seis tamanhos por breakpoint, o Cloudflare Images transforma direto sobre o R2 — o bucket não muda, as chaves não mudam, o banco não muda. É aditivo, não é migração.</p>
+<h2 class="quebra">5. Gratuito contra pago — onde o grátis quebra</h2>
+
+<p>Camada por camada, com o sintoma que o usuário final sente quando o plano gratuito atinge o limite. "Dá para validar" e "dá para operar" são coisas diferentes e estão separadas de propósito.</p>
+
+<table>
+<tr><th style="width:13%">Camada</th><th style="width:20%">O grátis existe?</th><th style="width:37%">Onde quebra, na prática</th><th style="width:15%">Validar / operar</th><th style="width:15%">1º degrau pago</th></tr>
+
+<tr>
+<td><strong>API</strong></td>
+<td>Não no Fly (acabou para conta nova). No Render, sim.</td>
+<td>O Render Free <strong>dorme após 15 minutos e leva de 30 a 60 segundos para acordar</strong>. O aluno abre o app entre séries e olha um spinner por quase um minuto. Pior ainda: <strong>webhook que chega com a instância dormindo se perde em silêncio</strong>. E o Render não tem região no Brasil.</td>
+<td>Render: <strong>nem validar</strong>.<br>Fly com auto-stop: valida, não opera.</td>
+<td><strong>US$ 5,16</strong><br>Fly 512 MB 24/7</td>
+</tr>
+
+<tr>
+<td><strong>Banco</strong></td>
+<td>Neon Free: 100 CU-h, 0,5 GB, restore de 6 h.</td>
+<td>Dois sintomas. <strong>O penhasco:</strong> 100 CU-h dão ~400 h num mês de 730; estourou, o banco para de aceitar escrita até virar o ciclo. <strong>O cold start empilhado:</strong> com a API também dormindo, o aluno paga o boot do container mais o retorno do banco.</td>
+<td>Valida (demo, 5 personais).<br><strong>Não opera</strong> — nenhum produto com usuário real tem interruptor mensal.</td>
+<td><strong>~US$ 5</strong><br>Neon Launch, sem mensalidade fixa</td>
+</tr>
+
+<tr>
+<td><strong>Mídia</strong></td>
+<td>R2: 10 GB/mês, egress sempre grátis.</td>
+<td><strong>Praticamente não quebra nessa escala.</strong> 10 GB cobrem 1.300 alunos com o mix atual. Passando disso, o 11º GB custa um centésimo de dólar. Sem penhasco, sem surpresa. O que falta: <strong>backup</strong> — a durabilidade é altíssima, mas se o seu código apagar o objeto errado, ele foi.</td>
+<td><strong>Valida e opera.</strong> Única camada onde o grátis é resposta definitiva.</td>
+<td>Não há degrau — é linear por GB.</td>
+</tr>
+
+<tr>
+<td><strong>CDN</strong></td>
+<td>Sim, e é o melhor negócio da lista: domínio próprio no R2 põe a rede da Cloudflare na frente sem custo, com presença em São Paulo.</td>
+<td>Não quebra por preço — quebra por URL assinada, como explicado na seção anterior.</td>
+<td><strong>Opera indefinidamente.</strong></td>
+<td>—</td>
+</tr>
+
+<tr>
+<td><strong>E-mail</strong></td>
+<td>Resend: 3.000/mês, <strong>com teto de 100 por dia</strong>.</td>
+<td><strong>O teto diário, não o mensal.</strong> Convidar 50 alunos de uma vez somado aos resets do dia já estoura. E sem domínio verificado o Resend só envia para o e-mail da própria conta — inútil em produção.</td>
+<td>Valida com folga.<br>Opera até ~30 personais ativos.</td>
+<td><strong>US$ 20</strong> (Resend Pro) ou <strong>US$ 0,10/mil</strong> (AWS SES)</td>
+</tr>
+
+<tr>
+<td><strong>Monitoramento</strong></td>
+<td>Sentry: 5.000 eventos/mês. Better Stack: 10 monitores.</td>
+<td>No Sentry, <strong>erros e transações dividem a mesma cota</strong> — ligar tracing sem amostragem queima os 5 mil numa tarde. Configurar <code>tracesSampleRate: 0.1</code> desde o começo. No Better Stack, log com retenção de 3 dias: o bug de sexta é investigado na terça e o log sumiu.</td>
+<td><strong>Opera bem</strong> nessa escala.</td>
+<td>US$ 26 (Sentry Team)</td>
+</tr>
+
+<tr>
+<td><strong>Painel</strong></td>
+<td>Vercel Hobby: US$ 0.</td>
+<td>A política é literal: <em>"restricted to non-commercial personal use only"</em>. <strong>No dia em que o primeiro personal pagar, vira uso comercial</strong> e o Hobby deixa de ser opção.</td>
+<td>Opera enquanto o beta for gratuito.</td>
+<td><strong>US$ 9,20</strong><br>2ª máquina no Fly, metade do Vercel Pro</td>
+</tr>
+</table>
+
+<div class="alerta">
+<strong>Não use o UptimeRobot.</strong> Os termos de serviço proíbem uso comercial desde dezembro de 2024. É a primeira sugestão que aparece em qualquer busca por "monitoramento grátis" e não serve para um produto que vai cobrar.
+</div>
+
+<h2>6. Os dois cenários, fechados</h2>
+
+<h3>Cenário mínimo — o máximo por perto de zero</h3>
+
+<table>
+<tr><th style="width:30%">Item</th><th style="width:45%">Escolha</th><th style="width:25%">US$/mês</th></tr>
+<tr><td>API</td><td>Fly 512 MB com desligamento automático</td><td>~1,90</td></tr>
+<tr><td>Banco</td><td>Neon Free</td><td>0,00</td></tr>
+<tr><td>Mídia e CDN</td><td>R2 free tier</td><td>0,00</td></tr>
+<tr><td>E-mail</td><td>Resend Free</td><td>0,00</td></tr>
+<tr><td>Monitoramento</td><td>Sentry Free + Better Stack Free</td><td>0,00</td></tr>
+<tr><td>Painel</td><td>Vercel Hobby</td><td>0,00</td></tr>
+<tr><td>Domínio <code>.com.br</code></td><td>registro.br, R$ 40/ano</td><td>0,62</td></tr>
+<tr><td><strong>Infraestrutura</strong></td><td></td><td><strong>US$ 2,52 · R$ 14</strong></td></tr>
+<tr><td>Apple Developer</td><td>US$ 99/ano, amortizado</td><td>8,25</td></tr>
+<tr><td><strong>Total real</strong></td><td>Google Play cobra US$ 25 uma única vez</td><td><strong>US$ 10,77 · R$ 58</strong></td></tr>
+</table>
+
+<p><strong>Não é zero.</strong> São R$ 14/mês de infraestrutura e <strong>R$ 58/mês</strong> contando a Apple — que é obrigatória e que ninguém lembra de somar.</p>
+
+<p><strong>O que se perde:</strong> cold start empilhado de 2 a 4 segundos toda primeira abertura do dia; o penhasco de CU-h que trava a escrita no meio do mês; restore de apenas 6 horas, ou seja, dado apagado ontem está perdido; webhook perdido em silêncio; e o Vercel Hobby proibindo uso comercial no dia do primeiro pagamento.</p>
+
+<p><strong>Risco aceitável apenas</strong> para demonstração e para os cinco primeiros personais que você conhece pessoalmente. Deixa de ser aceitável no dia em que um desconhecido instalar o app.</p>
+
+<h3>Cenário custo-benefício — a recomendação de verdade</h3>
+
+<table>
+<tr><th style="width:30%">Item</th><th style="width:45%">Escolha</th><th style="width:25%">US$/mês</th></tr>
+<tr><td>API</td><td>Fly 512 MB em <code>gru</code>, 24 horas por dia</td><td>5,16</td></tr>
+<tr><td>Egress da API</td><td>~1 GB</td><td>0,04</td></tr>
+<tr><td>TLS</td><td>10 certificados grátis por organização</td><td>0,00</td></tr>
+<tr><td>Banco</td><td><strong>Neon Launch com PITR de 7 dias</strong></td><td>4,95</td></tr>
+<tr><td>Mídia e CDN</td><td>R2, dentro do free tier</td><td>0,00</td></tr>
+<tr><td>E-mail</td><td>Resend Free com domínio verificado</td><td>0,00</td></tr>
+<tr><td>Monitoramento</td><td>Sentry + Better Stack, ambos free</td><td>0,00</td></tr>
+<tr><td>Painel</td><td>Vercel Hobby enquanto o beta for gratuito</td><td>0,00</td></tr>
+<tr><td>Domínio</td><td>—</td><td>0,62</td></tr>
+<tr><td><strong>Infraestrutura</strong></td><td></td><td><strong>US$ 10,77 · R$ 58</strong></td></tr>
+<tr><td>Apple Developer</td><td>amortizado</td><td>8,25</td></tr>
+<tr><td><strong>Total</strong></td><td></td><td><strong>US$ 19,02 · R$ 103</strong></td></tr>
+</table>
+
+<div class="veredito">
+<strong>A diferença entre os dois cenários é US$ 8,25/mês — R$ 44,55.</strong><br><br>
+Esses R$ 44,55 compram: fim do cold start, fim do penhasco de CU-h, recuperação de 7 dias em vez de 6 horas, e nenhum webhook perdido.<br><br>
+<strong>Recomendação: pule o cenário gratuito.</strong> Uma hora sua depurando "por que o app demorou 4 segundos para o aluno da academia X" custa mais que R$ 44.
+</div>
+
+<h3>Custo na escala de 1.000 alunos</h3>
+
+<table>
+<tr><th style="width:38%">Camada</th><th style="width:31%">Mês 1 (US$)</th><th style="width:31%">1.000 alunos (US$)</th></tr>
+<tr><td>API + egress + TLS</td><td>5,20</td><td>19,00</td></tr>
+<tr><td>Postgres</td><td>4,95</td><td>28,00</td></tr>
+<tr><td>Mídia, CDN e vídeo</td><td>0,00</td><td><strong>0,00</strong></td></tr>
+<tr><td>E-mail</td><td>0,00</td><td>20,00</td></tr>
+<tr><td>Monitoramento</td><td>0,00</td><td>26,00</td></tr>
+<tr><td>Painel</td><td>0,00</td><td>9,20</td></tr>
+<tr><td>Domínio</td><td>0,62</td><td>0,62</td></tr>
+<tr><td><strong>Total</strong></td><td><strong>US$ 10,77 · R$ 58</strong></td><td><strong>US$ 102,82 · R$ 555</strong></td></tr>
+</table>
+
+<p><strong>Nenhuma linha tem cauda longa.</strong> Não há item que possa explodir dez vezes sem que o número de usuários exploda junto — porque a linha que normalmente explode, egress de vídeo, é <strong>zero por construção</strong> no R2.</p>
+
+<p class="fonte">A linha do Postgres em escala é estimativa a partir dos preços unitários oficiais, não de plano publicado. Faixa realista: US$ 15 a 35/mês. É a única linha com incerteza material na tabela.</p>
+
+<div class="destaque">
+<strong>Com quantos alunos pagantes isso se paga?</strong> Supondo R$ 29,90 por aluno ou R$ 149 por personal — premissa, ajuste ao seu modelo:<br>
+<strong>Mês 1 (R$ 103):</strong> 4 alunos pagantes, ou 1 personal.<br>
+<strong>Escala de 1.000 alunos (R$ 555):</strong> 19 alunos dos mil, ou 4 personais dos cinquenta. A infraestrutura consome <strong>1,9% da receita bruta</strong>.<br><br>
+Do mês 1 à escala de mil alunos, a conta cresce 9,5 vezes enquanto a base cresce 50. <strong>A infraestrutura nunca é o problema deste negócio.</strong>
+</div>
+<h2 class="quebra">7. Lock-in e ordem de execução</h2>
+
+<h3>7.1 O que trava e o que é trocável</h3>
+
+<p>Uma pilha barata que prende é cara. Esta não prende — com uma exceção.</p>
+
+<div class="alerta">
+<strong>A única trava real: <code>EXPO_PUBLIC_API_URL</code> compilada no binário.</strong> Variáveis com esse prefixo são embutidas no bundle em tempo de build. Publicar com <code>https://ironforge.fly.dev</code> amarra o projeto ao Fly pelo tempo que os usuários levarem para atualizar — o que, em app de academia, é indefinido.
+<br><br>
+<strong>Boa notícia apurada:</strong> o resgate existe e é rápido. O app já tem canal de atualização OTA configurado com política de versão por <code>appVersion</code> — um <code>eas update</code> reconstrói o bundle com a URL nova e entrega sem passar pela loja. <strong>Minutos, não meses.</strong> Ainda assim: domínio próprio no dia 1, porque não há motivo para depender de plano de resgate.
+</div>
+
+<table>
+<tr><th style="width:24%">Peça</th><th style="width:52%">Trabalho para trocar de fornecedor</th><th style="width:24%">Bloqueia?</th></tr>
+<tr><td>API</td><td>O mesmo <code>Dockerfile</code> roda em ECS, Cloud Run, Railway ou Render. Troca-se o arquivo de configuração da plataforma.</td><td>não</td></tr>
+<tr><td>Postgres</td><td><code>pg_dump</code> e <code>pg_restore</code>. Schema, políticas de RLS e migrations são Postgres puro.</td><td>não</td></tr>
+<tr><td>Mídia</td><td>Sincronizar os objetos e trocar 5 variáveis de ambiente. <strong>Zero código</strong> — o cliente S3 já é genérico.</td><td>não</td></tr>
+<tr><td>Vídeo para HLS</td><td>Preencher <code>hlsUrl</code> e <code>durationSeconds</code>, campos já reservados. Aditivo, nenhum cliente muda.</td><td>não</td></tr>
+<tr><td>E-mail</td><td>Trocar um adaptador.</td><td>não</td></tr>
+<tr><td>Painel</td><td><code>next build</code> roda em qualquer lugar.</td><td>não</td></tr>
+</table>
+
+<p><strong>Três proibições que preservam essa liberdade:</strong> não adotar o driver serverless proprietário do Neon (trocaria uma migração de <code>pg_dump</code> por uma reescrita da camada de dados); não adotar Auth ou Storage do Supabase (a autenticação própria já existe e é melhor); e não usar DNS interno da plataforma na <code>DATABASE_URL</code> nem ler variáveis específicas do provedor dentro de regra de negócio.</p>
+
+<h3>7.2 Ordem de execução</h3>
+
+<h4>Bloqueiam o primeiro deploy</h4>
+<ol>
+<li><strong>Registrar o domínio e apontar os subdomínios da API e do CDN.</strong> É o passo 1 porque é a única decisão irreversível da lista. Nada vai para a loja antes disso.</li>
+<li><strong>Corrigir o RLS</strong> — as 12 tabelas têm <code>ENABLE ROW LEVEL SECURITY</code> e <strong>nenhuma tem <code>FORCE</code></strong>, e a role <code>ironforge_app</code> é <code>NOLOGIN</code>. Detalhado na seção 8.2. Sem isso o isolamento entre personais é decoração: os testes passam e o vazamento existe.</li>
+<li><strong>Criar o arquivo de configuração do Fly</strong> com região <code>gru</code>, health check em <code>/health</code> e comando de release <code>node dist/shared/db/migrate.js</code>.</li>
+<li><strong>Provisionar o Neon</strong> em São Paulo, com PITR de 7 dias ligado.</li>
+<li><strong>Provisionar o R2</strong>, bucket <code>ironforge-media</code> — não <code>ironforge-videos</code>, renomeie antes do primeiro objeto — com versionamento e expiração de versões antigas em 30 dias. É a rede contra apagamento acidental.</li>
+<li><strong>Subir</strong>, conferir o health check e rodar os seeds contra produção.</li>
+</ol>
+
+<div class="alerta">
+<strong>Erro encontrado na documentação:</strong> a ADR 0008 manda usar <code>npm run db:migrate</code> como comando de release. <strong>Isso falharia</strong> — esse script usa <code>tsx</code>, que não existe na imagem final de produção. O script correto já existe no repositório (<code>db:migrate:prod</code>), e o <code>docs/deploy.md</code> já está certo. <strong>Corrigir a ADR</strong>, senão o primeiro deploy quebra no passo de migration.
+</div>
+
+<h4>Semana 1, antes do primeiro personal externo</h4>
+<ol start="7">
+<li><strong>Verificar o domínio no provedor de e-mail</strong>, com DKIM e SPF. Sem isso o convite cai no spam do Gmail e o personal conclui que o produto está quebrado.</li>
+<li><strong>Sentry nos três projetos</strong>, com amostragem de tracing em 10% para não queimar a cota.</li>
+<li><strong>Monitor externo</strong> no health check a cada 3 minutos, com alerta por e-mail. Não confie no alerta nativo da plataforma — não foi possível confirmar que funcione no plano base de nenhuma das três.</li>
+<li><strong>Dump semanal do banco para fora do provedor.</strong> É um agendamento de uma linha e é a diferença entre um susto e o fim do projeto.</li>
+<li><strong>Aceitar formalmente os contratos de tratamento de dados</strong> dos fornecedores e declarar a transferência internacional na política de privacidade. O prazo da Resolução ANPD nº 19/2024 <strong>venceu em agosto de 2025</strong> — isso é dívida vencida, não planejamento.</li>
+</ol>
+
+<h4>Antes do primeiro vídeo próprio subir</h4>
+<ol start="12">
+<li><strong>Verificar <code>+faststart</code></strong> no codificador do app.</li>
+<li><strong>Separar vídeo público de vídeo privado</strong> na entrega, para o catálogo da plataforma cachear na borda em São Paulo.</li>
+</ol>
+
+<h4>Só quando o gatilho disparar</h4>
+<table>
+<tr><th style="width:45%">Gatilho</th><th style="width:35%">Ação</th><th style="width:20%">Custo adicional</th></tr>
+<tr><td>Primeiro personal <strong>pagante</strong></td><td>Sair do Vercel Hobby, painel para o Fly</td><td>+US$ 9,20</td></tr>
+<tr><td>P75 de tempo até o primeiro quadro acima de 3 s</td><td>Contratar streaming</td><td>+~US$ 5</td></tr>
+<tr><td>Acima de 3.000 e-mails/mês, ou teto diário mordendo</td><td>Plano pago de e-mail, ou migrar para SES</td><td>+US$ 0 a 20</td></tr>
+<tr><td>Existir receita recorrente</td><td>Segunda instância da API</td><td>+US$ 9,20</td></tr>
+<tr><td>Acima de 600 alunos ativos</td><td><strong>Nada</strong> — o R2 já está certo. Só conferir que ninguém migrou para S3 por engano</td><td>US$ 0</td></tr>
+<tr><td>Acima de 2.000 alunos, ou contrato com RPO definido</td><td>Abrir a decisão de arquitetura seguinte, com uso real medido</td><td>—</td></tr>
+</table>
+
+<p><strong>O que foi deliberadamente não recomendado:</strong> Kubernetes, microserviços, multi-região, infraestrutura como código, Redis, WAF, pooler externo, réplica de leitura e transcodificação. Nenhum tem um segundo caso concreto antes de mil alunos.</p>
+<h2 class="quebra">8. Segurança e LGPD — o que a infraestrutura precisa atender</h2>
+
+<p>Revisão de código nos três repositórios, não pentest. Todo achado abaixo foi confirmado abrindo o arquivo citado. Dois deles eu verifiquei uma segunda vez, por conta própria, antes de escrever aqui — estão marcados.</p>
+
+<h3>8.1 O que já está bem feito</h3>
+
+<div class="ok">
+Vale registrar, porque muda a prioridade do resto: a disciplina de segurança do backend está acima da média para este estágio.
+<ul style="margin-top:8px; margin-bottom:0">
+<li>Senha com <strong>Argon2id</strong> nos parâmetros recomendados pela OWASP (<code>memoryCost: 19456, timeCost: 2</code>).</li>
+<li><strong>Refresh token rotativo com detecção real de reuso</strong> e revogação de família inteira — não é só descrito na documentação, o código faz (<code>modules/auth/service.ts:136-165</code>). Tokens gravados como hash SHA-256, nunca em texto puro no banco.</li>
+<li>Recurso de outro tenant responde <strong>404, nunca 403</strong> — decisão deliberada contra enumeração de identificadores, documentada no próprio OpenAPI e aplicada de fato nos serviços.</li>
+<li>Escopo de dado sempre derivado do JWT, nunca de parâmetro de URL cru.</li>
+<li>Vídeo servido por <strong>URL assinada com validade de 1 hora</strong>; upload vai direto ao bucket, o binário nunca passa pela API.</li>
+<li>Variáveis de ambiente validadas com Zod no boot — falta variável obrigatória, o servidor não sobe.</li>
+<li><strong>Zero segredo no histórico do git</strong> dos três repositórios. Verificado com <code>git log --all -- .env</code>.</li>
+</ul>
+</div>
+
+<h3>8.2 O achado mais grave: o RLS provavelmente não está protegendo nada</h3>
+<p class="fonte">Verificado por mim, além do agente. Confirmado.</p>
+
+<p>As migrations criam políticas de Row Level Security e uma role <code>ironforge_app</code> para usá-las. A intenção é defesa em profundidade e está certa — o comentário em <code>0002_training_rls.sql</code> diz literalmente que a checagem de aplicação continua sendo o mecanismo primário e que as políticas existem para pegar um bug nela.</p>
+
+<p>O problema é que <strong>a segunda camada não está armada</strong>:</p>
+
+<ul>
+<li>A role <code>ironforge_app</code> é criada como <code>NOLOGIN</code> e <strong>em nenhum lugar do código a conexão assume essa role</strong> — não existe <code>SET ROLE</code> nem <code>SET SESSION AUTHORIZATION</code> em todo o repositório.</li>
+<li>A aplicação conecta com o usuário cru da <code>DATABASE_URL</code>, que é o mesmo usuário que roda as migrations — ou seja, o <strong>dono das tabelas</strong>.</li>
+<li>Em Postgres, <strong>o dono da tabela ignora RLS por padrão</strong>, a menos que exista <code>FORCE ROW LEVEL SECURITY</code>. Não existe: zero ocorrências no repositório.</li>
+</ul>
+
+<div class="alerta">
+<strong>Consequência prática:</strong> se qualquer serviço novo esquecer o filtro por <code>coachId</code> ou <code>athleteId</code>, o banco não vai barrar. E isso quase aconteceu — o comentário da própria migration <code>0002</code> menciona ter corrigido condições que deixavam um tenant ler e escrever perfil de aluno de outro. A rede de proteção existe no papel e está desligada na prática.
+</div>
+
+<p><strong>Correção, antes de subir com dado real:</strong></p>
+<ol>
+<li>Separar os dois usuários: um roda as migrations e é dono das tabelas; a <code>DATABASE_URL</code> da aplicação aponta para um usuário de runtime distinto, que herda <code>ironforge_app</code>.</li>
+<li>Adicionar <code>ALTER TABLE ... FORCE ROW LEVEL SECURITY</code> em todas as tabelas com política — protege até no caso de alguém rodar a aplicação com superusuário por engano.</li>
+<li>Escrever um teste de integração que conecta como o usuário de runtime e tenta ler linha de outro tenant <em>sem</em> passar pela camada de aplicação. Esse teste não existe hoje, e é ele que impede a regressão voltar.</li>
+</ol>
+
+<h3>8.3 Onde o token fica guardado</h3>
+
+<h4>App do aluno — token em texto puro, e refresh token jogado fora</h4>
+<p class="fonte">Verificado por mim, além do agente. Confirmado.</p>
+
+<p>Dois problemas no mesmo lugar, <code>features/auth/store.ts</code>:</p>
+
+<ul>
+<li>O access token é persistido em <strong>AsyncStorage, que não é criptografado</strong> e não tem controle de acesso do sistema operacional. Num aparelho com root, jailbreak ou backup extraído, o token é legível. A diretriz correta é <code>expo-secure-store</code>, que usa Keychain no iOS e Keystore no Android.</li>
+<li>O schema da resposta de login declara <code>refreshToken</code> (<code>auth/api.ts:17</code>), mas a linha 115 do store faz <code>const { accessToken, user } = response</code> — <strong>o refresh token é descartado e nunca chega a ser guardado</strong>. Na prática, o app não implementa renovação de sessão: quando o access token expira em 15 minutos, a sessão simplesmente cai e o aluno precisa logar de novo.</li>
+</ul>
+
+<div class="destaque">
+Esse segundo ponto merece atenção especial porque <strong>não aparece como bug</strong> — aparece como "o app desloga sozinho de vez em quando". O backend já tem toda a mecânica de rotação de refresh token pronta e bem feita; ela só nunca foi conectada no cliente. É o P0 nº 12 do PRD ("sessão persistente, sacrificar logins") não implementado.
+</div>
+
+<h4>Painel do personal — refresh token de 30 dias em localStorage</h4>
+
+<p><code>shared/lib/auth/session.ts</code> grava access token <strong>e</strong> refresh token em <code>localStorage</code>. Não há cookie <code>httpOnly</code>, não há CSP configurado no <code>next.config.ts</code>. Qualquer XSS no painel — inclusive vindo de dependência de terceiro — leva embora um token de 30 dias que dá acesso aos dados de saúde de todos os alunos daquele personal.</p>
+
+<p>A correção completa (refresh token em cookie <code>httpOnly</code> + <code>Secure</code> + <code>SameSite</code>) é decisão de arquitetura de sessão, não conserto de uma linha. Mitigação parcial imediata: reduzir o TTL do refresh token e adicionar CSP básico.</p>
+
+<h3>8.4 Segredos e configuração</h3>
+
+<table>
+<tr><th style="width:26%">Segredo</th><th>Ação obrigatória antes do go-live</th></tr>
+<tr><td><code>JWT_SECRET</code></td><td>Gerar valor aleatório novo, mínimo 32 caracteres, <strong>diferente por ambiente</strong>. Nunca reaproveitar o de desenvolvimento.</td></tr>
+<tr><td><code>DATABASE_URL</code></td><td>Credencial nova, com usuário dedicado de runtime — ver a correção de RLS acima, os dois assuntos são o mesmo.</td></tr>
+<tr><td><code>STORAGE_ACCESS_KEY</code> / <code>SECRET</code></td><td>Par de chaves novo, <strong>escopado só ao bucket</strong>, nunca a chave-mestra da conta do provedor.</td></tr>
+</table>
+
+<p>Dois ajustes menores encontrados: o <code>.gitignore</code> do painel cobre <code>.env</code> e <code>.env*.local</code>, mas <strong>não cobre <code>.env.production</code></strong> — buraco pronto para alguém cair nele num <code>git add .</code> futuro. E nenhuma variável <code>EXPO_PUBLIC_*</code> existe hoje no app, o que é a disciplina certa: tudo que tem esse prefixo é público por definição e nunca deve receber chave de terceiro.</p>
+
+<h3>8.5 Bucket de mídia</h3>
+
+<p>O código está correto: URL assinada com validade, upload direto, nenhuma ACL pública em lugar nenhum. <strong>O risco não está no código, está na configuração do bucket.</strong> Se o bucket for público por configuração de infraestrutura, a assinatura vira decoração — qualquer um monta a URL direta e acessa sem token, para sempre.</p>
+
+<div class="veredito">
+<strong>Ação não verificável por código:</strong> no console do provedor, confirmar <code>Block all public access</code> ligado no bucket de produção. É a única forma real de uma URL de vídeo de aluno vazar permanentemente.
+</div>
+
+<h3>8.6 LGPD — o que a lei exige e o que é boa prática</h3>
+
+<p>Separando as duas coisas, porque misturá-las gera trabalho desnecessário e deixa passar o que importa.</p>
+
+<h4>Exigência legal</h4>
+<ul>
+<li><strong>Base legal para dado sensível.</strong> Peso corporal, lesão e restrição física são dado de saúde (art. 5º, II) e exigem base do art. 11 — na prática, <strong>consentimento específico e destacado</strong>, coletado separado do aceite genérico de termos. Não pode ser uma caixinha só.</li>
+<li><strong>Cuidado com a base "tutela da saúde".</strong> Ela existe no art. 11, mas pressupõe profissional de saúde ou entidade sanitária. Educador físico não se enquadra nisso no sentido estrito da lei. Não usar essa base sem parecer jurídico.</li>
+<li><strong>Exclusão de conta e dados</strong> (art. 18, IV e VI). Precisa de fluxo real dentro do produto — hoje <strong>não existe rota de auto-exclusão na API</strong>. É também exigência da Apple, então o item aparece duas vezes por motivos diferentes.</li>
+<li><strong>Encarregado de dados e canal de contato visíveis</strong> (art. 41). Para operação pequena pode ser pessoa física designada, mas o canal precisa existir e estar publicado.</li>
+<li><strong>Quem mais vê o dado.</strong> Precisa estar explícito que o personal enxerga peso, lesão declarada e vídeo do aluno. Para o aluno é óbvio que o personal vê o treino; não é óbvio que vê o resto.</li>
+</ul>
+
+<h4>Boa prática, não exigência</h4>
+<ul>
+<li><strong>A LGPD não exige hospedagem no Brasil.</strong> O art. 33 permite transferência internacional com cláusulas contratuais padrão ou consentimento específico. Hospedar fora é legal, desde que a política informe a transferência e a hipótese usada.</li>
+<li>Ainda assim, região São Paulo é preferível — por latência, e porque <strong>simplifica a conversa comercial</strong>: o personal vai perguntar onde ficam os dados dos alunos dele, e "no Brasil" é uma resposta que não precisa de explicação.</li>
+</ul>
+<h2 class="quebra">9. O que já está pronto</h2>
+
+<p>Antes da lista do que falta, o que já existe — porque muda a leitura de tudo. O IronForge não é um protótipo: é um sistema com três aplicações funcionais e suíte de testes verde.</p>
+
+<table>
+<tr><th style="width:22%">Repositório</th><th style="width:14%">Testes</th><th>O que já funciona</th></tr>
+<tr>
+  <td><code>ironforge-api</code><br>Fastify 5 + Drizzle + Postgres 16</td>
+  <td>112 passando<br>86,1% cobertura</td>
+  <td>34 rotas cobrindo auth com refresh token rotativo, catálogo de exercícios, templates de plano, atribuição individual e em massa, sessões e séries de treino, histórico de carga, recordes pessoais e biblioteca de vídeo. Helmet, CORS, rate limit e JWT configurados. RLS multi-tenant nas migrations. OpenAPI 3.1 gerado do próprio servidor. Dockerfile multi-stage pronto.</td>
+</tr>
+<tr>
+  <td><code>ironforge-web</code><br>Next.js 16 + React 19</td>
+  <td>85 passando</td>
+  <td>Painel do personal com dashboard, tabela de alunos com filtros, convite e remoção, builder de plano com drag-and-drop, atribuição em massa, biblioteca de vídeo com fila de upload, perfil do personal e página pública por slug.</td>
+</tr>
+<tr>
+  <td><code>ironforge</code><br>Expo + React Native</td>
+  <td>116 passando</td>
+  <td>App do aluno com autenticação, onboarding, home, lista de treinos, logger de treino com teclado numérico e timer de descanso, tela de exercício com vídeo de demonstração, resumo de sessão, progresso e histórico.</td>
+</tr>
+</table>
+
+<div class="ok">
+<strong>Leitura honesta:</strong> o volume de trabalho restante é menor do que parece pela lista abaixo. A maior parte do que falta é <em>ligação e operação</em> — conectar peças que já existem e colocar o conjunto num servidor — e não construção de funcionalidade nova.
+</div>
+
+<h2 class="quebra">10. O que ainda falta — relatório completo</h2>
+
+<p>30 itens, organizados em cinco marcos de execução. Todos estão registrados no Linear, no projeto Ironforge, com descrição, escopo, critério de aceite e dependências ligadas. O identificador entre parênteses é o card.</p>
+
+<p><span class="tag t-bloq">BLOQUEADOR</span> impede o produto de ir ao ar. <span class="tag t-alta">ALTA</span> deveria estar pronto no lançamento. <span class="tag t-media">MÉDIA</span> e <span class="tag t-baixa">BAIXA</span> podem vir depois.</p>
+
+<h3>Marco 1 — Ambiente de produção no ar</h3>
+<p class="fonte">Nada de produto novo aqui: só tirar o sistema do localhost.</p>
+
+<table>
+<tr><th style="width:9%">Card</th><th style="width:30%">Item</th><th style="width:10%">Peso</th><th>Por que importa</th></tr>
+<tr><td>SPA-94</td><td>Postgres gerenciado + migrations</td><td><span class="tag t-bloq">BLOQUEADOR</span></td><td>Hoje o banco só existe no <code>docker-compose</code> local. As migrations precisam rodar como passo de release, nunca no boot — o migrator do Drizzle não usa advisory lock e duas instâncias subindo juntas colidem. Inclui o seed do catálogo de exercícios, sem o qual o app abre vazio.</td></tr>
+<tr><td>SPA-95</td><td>Deploy da API</td><td><span class="tag t-bloq">BLOQUEADOR</span></td><td>O <code>Dockerfile</code> está pronto. Falta o ambiente e as variáveis: <code>JWT_SECRET</code> novo, <code>CORS_ORIGINS</code> com a origem real do painel, <code>NODE_ENV=production</code>. Atenção: <code>CORS_ORIGINS</code> vazio desliga o CORS e o painel para de funcionar sem erro óbvio.</td></tr>
+<tr><td>SPA-96</td><td>Deploy do painel com MSW desligado</td><td><span class="tag t-bloq">BLOQUEADOR</span></td><td>O painel ainda carrega o <code>MswGate</code> no layout raiz. Build de produção não deve levar mock nenhum, e isso precisa ser verificado no ambiente real, não presumido.</td></tr>
+<tr><td>SPA-97</td><td>Object storage + CDN</td><td><span class="tag t-alta">ALTA</span></td><td>O código de presigned upload já existe e aponta para um MinIO local. Com as variáveis vazias o upload de arquivo desliga e só o YouTube funciona — é o plano B aceitável se o prazo apertar.</td></tr>
+<tr><td>SPA-98</td><td>Domínio, DNS e TLS</td><td><span class="tag t-alta">ALTA</span></td><td>O app de produção exige host estável: <code>EXPO_PUBLIC_API_URL</code> é obrigatória no build de release. E universal links do convite só funcionam com domínio.</td></tr>
+<tr><td>SPA-99</td><td>CI nos três repositórios</td><td><span class="tag t-alta">ALTA</span></td><td>Nenhum repo tem <code>.github/</code>. 313 testes existem e nada impede um merge quebrado. Inclui checagem de que o OpenAPI não ficou dessincronizado.</td></tr>
+<tr><td>SPA-100</td><td>Backup do banco com restore testado</td><td><span class="tag t-alta">ALTA</span></td><td>O ativo do produto é o histórico de carga do aluno. Backup que nunca foi restaurado não é backup, é esperança.</td></tr>
+<tr><td>SPA-101</td><td>Sentry e alerta de 5xx</td><td><span class="tag t-media">MÉDIA</span></td><td>Sem rastreamento de erro, um crash no app do aluno é invisível — a descoberta vem pela avaliação de uma estrela na loja.</td></tr>
+</table>
+
+<h3>Marco 2 — App consumindo a API real</h3>
+<p class="fonte">Meta: personal convida, aluno aceita, recebe plano, registra carga, e a carga persiste.</p>
+
+<table>
+<tr><th style="width:9%">Card</th><th style="width:30%">Item</th><th style="width:10%">Peso</th><th>Por que importa</th></tr>
+<tr><td>SPA-102</td><td>Persistir sessão e séries na API</td><td><span class="tag t-bloq">BLOQUEADOR</span></td><td><strong>O achado mais grave da análise.</strong> É o P0 nº 4 do PRD — "registro de carga persistente, sua dor #1" — e não existe de verdade. A API expõe <code>POST /sessions</code>, <code>/sessions/{id}/sets</code> e <code>GET /load-history</code>, e o app não chama nenhuma dessas rotas: <code>features/workout/store.ts</code> guarda tudo só no dispositivo. Trocar de celular ou reinstalar zera o histórico — exatamente o que o produto promete impedir.</td></tr>
+<tr><td>SPA-103</td><td>Progresso e histórico reais</td><td><span class="tag t-bloq">BLOQUEADOR</span></td><td>As telas de progresso e histórico leem de arquivos de mock. O aluno vê gráfico de outra pessoa.</td></tr>
+<tr><td>SPA-104</td><td>Convite por deep link real</td><td><span class="tag t-bloq">BLOQUEADOR</span></td><td><code>entities/invite/lib/decode-token.ts</code> valida o token contra um <code>MOCK_TOKENS</code> fixo no código. É a porta de entrada de todo aluno do produto, e ela é falsa.</td></tr>
+<tr><td>SPA-108</td><td>Remover login de dev do build</td><td><span class="tag t-bloq">BLOQUEADOR</span></td><td><code>dev-accounts.ts</code> e o seletor de login permitem entrar em contas de teste com um toque. Num build de loja, isso é acesso a conta sem senha na mão de qualquer pessoa.</td></tr>
+<tr><td>SPA-107</td><td>Remover a área do personal do app</td><td><span class="tag t-bloq">BLOQUEADOR</span></td><td>Decisão tomada: o personal usa só o painel web. As quatro telas de <code>app/(coach)/</code> leem de mock, e tela com dado falso é motivo de rejeição na revisão da App Store. Inclui tratar o personal que tentar entrar pelo app, para não cair em loop de redirect.</td></tr>
+<tr><td>SPA-121</td><td>Remover a tela de notificações mockada</td><td><span class="tag t-alta">ALTA</span></td><td>Mesma situação: caixa de entrada que nunca recebe nada, sem push por trás. Volta junto com o push de verdade.</td></tr>
+<tr><td>SPA-105</td><td>Home, treinos e perfil sem mock</td><td><span class="tag t-alta">ALTA</span></td><td>Três telas principais ainda montadas sobre dados fictícios.</td></tr>
+<tr><td>SPA-106</td><td>Fila offline do registro de carga</td><td><span class="tag t-alta">ALTA</span></td><td>Subsolo de academia é o pior lugar de rede que existe, e é exatamente onde o app é usado. Sem fila local, série registrada durante queda de sinal some.</td></tr>
+</table>
+
+<h3>Marco 3 — Ciclo de vida de conta</h3>
+<p class="fonte">O que um usuário externo precisa para se virar sozinho, sem te ligar.</p>
+
+<table>
+<tr><th style="width:9%">Card</th><th style="width:30%">Item</th><th style="width:10%">Peso</th><th>Por que importa</th></tr>
+<tr><td>SPA-109</td><td>Recuperação de senha</td><td><span class="tag t-bloq">BLOQUEADOR</span></td><td>A API não tem rota de reset — só register, login, refresh, logout e me. Todo usuário que esquecer a senha vira um chamado manual para você.</td></tr>
+<tr><td>SPA-110</td><td>E-mail transacional</td><td><span class="tag t-bloq">BLOQUEADOR</span></td><td>Não existe provedor de e-mail em nenhum dos três repos. Sem ele não há reset de senha nem entrega automática de convite. Exige domínio remetente com SPF e DKIM, senão cai em spam e o aluno nunca entra.</td></tr>
+<tr><td>SPA-111</td><td>Endurecer as rotas de auth</td><td><span class="tag t-alta">ALTA</span></td><td>O rate limit é o mesmo (200/min) para listar exercício e para tentar senha. Falta limite específico e bloqueio progressivo por conta.</td></tr>
+</table>
+
+<h3>Marco 4 — Publicação nas lojas</h3>
+
+<table>
+<tr><th style="width:9%">Card</th><th style="width:30%">Item</th><th style="width:10%">Peso</th><th>Por que importa</th></tr>
+<tr><td>SPA-114</td><td>Contas Apple e Google</td><td><span class="tag t-bloq">BLOQUEADOR</span></td><td><strong>Comece por aqui, hoje.</strong> É o único item com espera de terceiro: aprovação da Apple leva dias, e conta pessoal nova no Google exige 12 testadores por 14 dias antes de liberar produção. Começar tarde atrasa o lançamento mais que qualquer código.</td></tr>
+<tr><td>SPA-113</td><td>Privacidade, termos e LGPD</td><td><span class="tag t-bloq">BLOQUEADOR</span></td><td>Sem URL pública de política de privacidade a submissão nem é aceita. E o produto trata dado de saúde — lesões, restrições, peso — o que puxa obrigação real, incluindo exclusão de conta pelo próprio app.</td></tr>
+<tr><td>SPA-112</td><td>Perfil de produção no EAS</td><td><span class="tag t-bloq">BLOQUEADOR</span></td><td><code>eas.json</code> tem apenas o perfil <code>preview</code>. Não há perfil de produção, não há bloco de submit, e a versão está em 0.1.0. Hoje não existe binário submissível.</td></tr>
+<tr><td>SPA-116</td><td>Smoke test em produção</td><td><span class="tag t-alta">ALTA</span></td><td>313 testes cobrem as peças isoladas. Ninguém testou as três juntas contra o ambiente real, e o fluxo do primeiro dia atravessa os três repositórios.</td></tr>
+<tr><td>SPA-115</td><td>Ficha de loja</td><td><span class="tag t-alta">ALTA</span></td><td>Screenshots nas resoluções exigidas, descrição, classificação etária e os formulários App Privacy e Data Safety — que precisam bater com a política publicada.</td></tr>
+<tr><td>SPA-117</td><td>Licença no repo do app</td><td><span class="tag t-baixa">BAIXA</span></td><td>Os outros dois repositórios têm <code>LICENSE</code>; o do app não.</td></tr>
+</table>
+
+<h3>Marco 5 — Primeira coisa depois do lançamento</h3>
+
+<table>
+<tr><th style="width:9%">Card</th><th style="width:30%">Item</th><th style="width:10%">Peso</th><th>Por que importa</th></tr>
+<tr><td>SPA-122</td><td>Pesquisa de cobrança</td><td><span class="tag t-alta">ALTA</span></td><td>Precisa fechar antes de escrever qualquer linha de cobrança: modelo, gateway, regra das lojas e parte fiscal. Já decidido: assinatura vendida só pelo painel web, nunca dentro do app, para ficar fora da comissão da Apple e do Google.</td></tr>
+<tr><td>SPA-118</td><td>Cobrança recorrente</td><td><span class="tag t-media">MÉDIA</span></td><td>O esqueleto já existe no banco: limite de alunos por plano e o erro de limite atingido. Dá para lançar cobrando por fora, no Pix manual, enquanto isso é construído.</td></tr>
+<tr><td>SPA-119</td><td>Push notification</td><td><span class="tag t-media">MÉDIA</span></td><td>Aderência ao treino é o que segura o aluno. Lembrete é a alavanca mais barata que existe para isso.</td></tr>
+<tr><td>SPA-120</td><td>Métricas de ativação e retenção</td><td><span class="tag t-media">MÉDIA</span></td><td>Sem métrica, o roadmap seguinte vira opinião. A pergunta a responder é: de cada 10 convites, quantos alunos treinam na primeira semana?</td></tr>
+</table>
+
+<h3 class="quebra">Achados da varredura técnica — o que não estava na lista inicial</h3>
+
+<p>Uma varredura independente dos três repositórios encontrou oito itens que a leitura anterior não tinha pego. Quatro deles são graves. Os dois primeiros eu verifiquei pessoalmente, abrindo os arquivos, antes de registrar.</p>
+
+<table>
+<tr><th style="width:9%">Card</th><th style="width:30%">Item</th><th style="width:10%">Peso</th><th>Achado</th></tr>
+
+<tr><td>SPA-123</td><td>RLS não está protegendo nada</td><td><span class="tag t-bloq">BLOQUEADOR</span></td><td>Detalhado na seção 8.2. A aplicação conecta como dona das tabelas e dono de tabela ignora RLS. A rede de proteção existe no papel e está desligada.</td></tr>
+
+<tr><td>SPA-124</td><td>App descarta o refresh token</td><td><span class="tag t-bloq">BLOQUEADOR</span></td><td>Detalhado na seção 8.3. O app não renova sessão — desloga o aluno a cada 15 minutos — e guarda o token em armazenamento não criptografado.</td></tr>
+
+<tr><td>SPA-126</td><td>Personal não vê nem troca o plano do aluno</td><td><span class="tag t-bloq">BLOQUEADOR</span></td><td>O drawer de detalhe do aluno <strong>não tem uma única menção a plano ou atribuição</strong>. Do outro lado, <code>GET</code>, <code>PATCH</code> e <code>DELETE /assignments/{id}</code> existem na API e não são chamados por ninguém. O personal não consegue trocar a ficha de um aluno no meio do ciclo — o uso mais corriqueiro do painel — nem cancelar uma atribuição feita por engano. Só reatribuir do zero, empilhando.</td></tr>
+
+<tr><td>SPA-127</td><td>Seletor de exercício some acima de 50 itens</td><td><span class="tag t-bloq">BLOQUEADOR</span></td><td>O builder chama <code>getExercises()</code> sem parâmetro; a API devolve 50 por padrão. O catálogo semeado tem <strong>46</strong>. Sobram quatro de folga. Passando disso, exercícios somem do seletor sem busca, sem paginação e sem aviso — e o personal conclui que "não existe no sistema".</td></tr>
+
+<tr><td>SPA-125</td><td>Token de 30 dias em localStorage no painel</td><td><span class="tag t-alta">ALTA</span></td><td>Seção 8.3. Sem CSP, sem cookie <code>httpOnly</code>.</td></tr>
+
+<tr><td>SPA-129</td><td>Bio do personal: 2000 na escrita, 500 na leitura</td><td><span class="tag t-media">MÉDIA</span></td><td>Não quebra hoje porque o formulário também trava em 500. Mas qualquer bio entre 501 e 2000 gravada por outro caminho faz o <code>parse()</code> de <code>GET /coaches/me</code> estourar e <strong>o painel inteiro parar de carregar</strong>. Falha de validação na leitura não degrada, derruba.</td></tr>
+
+<tr><td>SPA-128</td><td>Personal criar exercício próprio</td><td><span class="tag t-media">MÉDIA</span></td><td>A API suporta exercício próprio por completo, com <code>ownerCoachId</code> e isolamento por tenant. Nenhuma tela usa. O personal fica preso aos 46 do catálogo global, sem lugar para a variação do aparelho da academia dele.</td></tr>
+
+<tr><td>SPA-130</td><td>21 vulnerabilidades no ferramental do Expo</td><td><span class="tag t-baixa">BAIXA</span></td><td>Toda a cadeia é ferramenta de build, não código embarcado — risco real baixo. Mas aparece em qualquer auditoria que um cliente peça. A correção sobe o SDK com breaking change; é upgrade de pós-lançamento, não de véspera. API e painel estão com <strong>zero</strong> vulnerabilidades.</td></tr>
+</table>
+
+<div class="destaque">
+<strong>Duas armadilhas embutidas no card mais importante.</strong> Quando for religar a persistência de treino (SPA-102), dois descompassos de contrato quebram na primeira chamada: o app gera id de sessão no formato <code>sess-xxxx</code> e a API exige UUID; e o índice da série é <code>min(1)</code> no app contra <code>min(0)</code> na API. Já estão anotados dentro do card.
+</div>
+
+<h3>O que a varredura confirmou estar bem resolvido</h3>
+
+<ul>
+<li><strong>Zero erro</strong> de <code>lint</code> e <code>typecheck</code> nos três repositórios. Nenhuma dependência alpha, beta ou rc.</li>
+<li>Estados de carregamento, erro com repetição e lista vazia estão <strong>bem cobertos</strong> no painel — dashboard, alunos, fichas e biblioteca de vídeo, todos tratam os três casos.</li>
+<li><strong>Cópia em massa de treino</strong> (P0 nº 5 do PRD) e <strong>periodização ABCD</strong> (P1 nº 6) estão implementadas ponta a ponta, com schema idêntico nos três repositórios. Podem sair da lista de pendências.</li>
+<li>A paginação da API está bem desenhada em todos os módulos — o problema está em quem consome, não em quem serve.</li>
+<li>A página pública do personal existe e cobre o essencial. Falta o editor por blocos e os depoimentos que o PRD descreve, mas a versão reduzida é aceitável para o MVP.</li>
+</ul>
+
+<h2 class="quebra">11. Conclusão</h2>
+
+<p>Três respostas, em ordem de urgência.</p>
+
+<p><strong>Sobre a infraestrutura:</strong> a pilha recomendada custa <strong>R$ 58/mês para lançar</strong> e <strong>R$ 555/mês com mil alunos</strong>, consumindo menos de 2% da receita bruta nessa escala. A decisão que mais importa não é a de preço — é manter API e banco no mesmo metrô de São Paulo, porque a camada de multi-tenancy faz quatro idas ao banco por requisição e atravessar o hemisfério quatro vezes custa meio segundo por chamada.</p>
+
+<p><strong>Sobre o gratuito:</strong> ele existe, é honesto, e economiza R$ 44 por mês. Não vale a pena — paga-se em cold start, em risco de perda de dado e na sua atenção, que é o recurso escasso aqui.</p>
+
+<p><strong>Sobre o que falta:</strong> 35 itens, 16 deles bloqueadores. O volume assusta menos quando se percebe que a maior parte é ligação e operação, não construção. As três coisas para fazer <em>hoje</em>, porque destravam todo o resto:</p>
+
+<div class="veredito">
+<strong>1. Abrir as contas Apple e Google.</strong> É o único item com espera de terceiro. Aprovação da Apple leva dias; conta pessoal nova no Google exige 12 testadores por 14 dias antes de liberar produção. Começar tarde atrasa o lançamento mais que qualquer código.<br><br>
+<strong>2. Registrar o domínio.</strong> É a única decisão irreversível da pilha. Universal link do convite, e-mail que não cai em spam e URL de mídia dependem dele.<br><br>
+<strong>3. Corrigir o RLS antes de subir qualquer dado real.</strong> Doze tabelas com política ativa e nenhuma com <code>FORCE</code>: hoje o isolamento entre personais existe só na camada de aplicação, e o banco não tem como socorrer um esquecimento.
+</div>
+
+<p>Depois disso, a ordem é a da seção 7. E o item de produto que decide se o app cumpre a promessa que faz — fazer o registro de carga chegar ao servidor — é o SPA-102.</p>
+
+<hr style="border:none; border-top:1px solid #ddd; margin:24px 0 12px">
+<p class="fonte">Relatório produzido a partir de leitura direta dos três repositórios em 27 de agosto de 2026. Preços verificados nas páginas oficiais dos fornecedores na mesma data; cotação premissa de R$ 5,40 por dólar. Estimativas estão marcadas como tais no corpo do texto. As pendências estão registradas no Linear, projeto Ironforge, cards SPA-94 a SPA-130.</p>
+
+</body>
+</html>
