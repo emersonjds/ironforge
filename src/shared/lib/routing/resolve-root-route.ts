@@ -1,7 +1,9 @@
+import type { UserRole } from "@features/auth/store";
+
 interface ResolveRootRouteInput {
   isAuthenticated: boolean;
   hasCompletedOnboarding: boolean;
-  role: "athlete" | "coach" | null;
+  role: UserRole | null;
 }
 
 export type RootRoute =
