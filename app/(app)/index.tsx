@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ScrollView, View, Pressable, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { cssInterop } from "nativewind";
@@ -23,6 +23,7 @@ import type { StoredSession } from "@features/workout/hooks/use-last-finished-se
 import { useAssignments, pickActiveAssignment, resolveNextSession } from "@entities/plan";
 import { useExercises } from "@entities/exercise";
 import { muscleLabel } from "@entities/exercise/lib/muscle-labels";
+import { reconcileActiveSession } from "@features/workout/store";
 
 cssInterop(ScrollView, { className: "style" });
 cssInterop(View, { className: "style" });
@@ -119,6 +120,11 @@ function TodayHeroCard() {
 
   const plan = pickActiveAssignment(assignments.data ?? []);
   const isLoading = assignments.isLoading || exercises.isLoading;
+
+  useEffect(() => {
+    if (!assignments.data) return;
+    void reconcileActiveSession(assignments.data);
+  }, [assignments.data]);
 
   const byId = useMemo(
     () => new Map((exercises.data ?? []).map((exercise) => [exercise.id, exercise])),
