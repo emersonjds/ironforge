@@ -3,5 +3,4 @@ export * from "./user.mock";
 export * from "./dashboard.mock";
 export * from "./profile.mock";
 export * from "./progress.mock";
-export * from "./notifications.mock";
 export * from "./relation.mock";

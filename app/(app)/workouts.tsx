@@ -51,8 +51,7 @@ export default function WorkoutsScreen() {
     <Screen edges={["top"]} padded={false}>
       <AppHeader
         avatarUrl={mockUser.avatarUrl}
-        hasNotifications
-        onPressBell={() => router.push("/(app)/notifications")}
+        showBell={false}
         onPressAvatar={() => router.push("/(app)/profile")}
       />
       <ScrollView showsVerticalScrollIndicator={false}>
