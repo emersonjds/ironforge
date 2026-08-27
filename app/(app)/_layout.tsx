@@ -17,7 +17,6 @@ export default function AppLayout() {
       <Tabs.Screen name="profile" />
       {/* rotas navegáveis fora da tab bar */}
       <Tabs.Screen name="history" options={{ href: null }} />
-      <Tabs.Screen name="notifications" options={{ href: null }} />
     </Tabs>
   );
 }

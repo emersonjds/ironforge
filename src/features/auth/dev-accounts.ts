@@ -18,21 +18,25 @@ export interface DevAccount {
  * inexistente só resultaria em "credenciais inválidas". Adicione aqui outras
  * contas conforme forem semeadas.
  */
-export const DEV_ACCOUNTS: DevAccount[] = [
-  {
-    id: "athlete-demo",
-    label: "Aluno demo",
-    hint: "aluno@ironforge.test",
-    role: "athlete",
-    email: "aluno@ironforge.test",
-    password: "demo-ironforge-2026",
-  },
-  {
-    id: "coach-demo",
-    label: "Personal demo",
-    hint: "personal@ironforge.test",
-    role: "coach",
-    email: "personal@ironforge.test",
-    password: "demo-ironforge-2026",
-  },
-];
+const DEV_ACCOUNT_PASSWORD = process.env.EXPO_PUBLIC_DEV_ACCOUNT_PASSWORD;
+
+export const DEV_ACCOUNTS: DevAccount[] = DEV_ACCOUNT_PASSWORD
+  ? [
+      {
+        id: "athlete-demo",
+        label: "Aluno demo",
+        hint: "aluno@ironforge.test",
+        role: "athlete",
+        email: "aluno@ironforge.test",
+        password: DEV_ACCOUNT_PASSWORD,
+      },
+      {
+        id: "coach-demo",
+        label: "Personal demo",
+        hint: "personal@ironforge.test",
+        role: "coach",
+        email: "personal@ironforge.test",
+        password: DEV_ACCOUNT_PASSWORD,
+      },
+    ]
+  : [];

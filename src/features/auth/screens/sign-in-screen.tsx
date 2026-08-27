@@ -23,7 +23,7 @@ export function SignInScreen() {
     setError(null);
     try {
       await loginWithPassword(email, password, role);
-      router.replace(role === "coach" ? "/(coach)" : "/(app)");
+      router.replace("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível entrar agora.");
     } finally {

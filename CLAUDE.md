@@ -7,7 +7,7 @@ IronForge é uma **plataforma personal↔aluno** (B2B2C): app mobile (Expo/RN) p
 > Bloco idêntico nos três repositórios (`ironforge-api`, `ironforge-web`, `ironforge`). Mudou aqui, muda nos três no mesmo dia.
 
 ### Commits
-Micro commits, um por contexto, **Conventional Commits** em inglês (`feat(auth): add refresh token rotation`). Git flow: `master` (estável) ← `develop` (integração) ← `feature/…` · `fix/…` · `docs/…`; feature sai de `develop` e volta pra ela com merge `--no-ff`.
+Micro commits, um por contexto, **Conventional Commits** em inglês (`feat(auth): add refresh token rotation`). Git flow: `master` (estável) ← `developer` (integração) ← `feature/…` · `fix/…` · `docs/…`; feature sai de `developer` e volta pra ela com merge `--no-ff`.
 
 **Autoria é exclusivamente do Emerson** (`Emerson Silva <emerson_jdss@hotmail.com>`). **Zero lastro de LLM:** nenhum `Co-Authored-By`, nenhum 🤖, nenhuma menção a Claude/Anthropic/IA em mensagem, corpo, PR ou comentário. Rodar `typecheck` + `lint` + `test` antes de cada commit. Commitar e pushar **só quando pedido**.
 

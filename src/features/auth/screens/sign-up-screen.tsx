@@ -49,7 +49,7 @@ export function SignUpScreen() {
       role,
     );
     setLoading(false);
-    router.replace(role === "coach" ? "/(coach)" : "/(onboarding)/goal");
+    router.replace("/");
   }
 
   return (

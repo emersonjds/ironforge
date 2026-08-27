@@ -19,7 +19,7 @@ export function DevLoginPicker() {
   const [error, setError] = useState<string | null>(null);
   const loginWithPassword = useAuthStore((s) => s.loginWithPassword);
 
-  if (!__DEV__) return null;
+  if (!__DEV__ || DEV_ACCOUNTS.length === 0) return null;
 
   async function enterAs(account: DevAccount) {
     setLoadingId(account.id);
