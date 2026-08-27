@@ -41,6 +41,10 @@
     },
     "transformIgnorePatterns": [
       "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/(?!metro)|@expo-google-fonts|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|nativewind|rettime|until-async|@open-draft/deferred-promise)"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/.claude/"
     ]
   },
   "dependencies": {
