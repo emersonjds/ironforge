@@ -84,7 +84,10 @@ export function WorkoutPreviewScreen() {
   const totalSets = planDay.exercises.reduce((sum, pe) => sum + pe.targetSets, 0);
 
   function handleStart() {
-    startSession(planDay, user?.id ?? "user-local", assignmentId);
+    const active = useActiveSessionStore.getState().session;
+    if (!active || active.planDayId !== planDay.id) {
+      startSession(planDay, user?.id ?? "user-local", assignmentId);
+    }
     router.replace("/(workout)/logger");
   }
 
