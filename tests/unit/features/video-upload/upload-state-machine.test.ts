@@ -1,4 +1,9 @@
-import { uploadReducer, INITIAL_UPLOAD_STATE, type UploadState } from "@features/video-upload/lib/upload-state-machine";
+import {
+  uploadReducer,
+  INITIAL_UPLOAD_STATE,
+  type UploadState,
+  type UploadAction,
+} from "@features/video-upload/lib/upload-state-machine";
 
 describe("uploadReducer", () => {
   it("começa idle", () => {
@@ -22,6 +27,17 @@ describe("uploadReducer", () => {
 
     state = uploadReducer(state, { type: "COMPLETED", videoId: "v1" });
     expect(state).toEqual({ status: "done", videoId: "v1" });
+  });
+
+  it("ignora PROGRESS fora de uploading", () => {
+    expect(uploadReducer(INITIAL_UPLOAD_STATE, { type: "PROGRESS", progress: 0.5 })).toEqual(
+      INITIAL_UPLOAD_STATE,
+    );
+  });
+
+  it("ignora UPLOADED fora de uploading", () => {
+    const requestingState: UploadState = { status: "requesting-url" };
+    expect(uploadReducer(requestingState, { type: "UPLOADED" })).toEqual(requestingState);
   });
 
   it("clampa o progresso entre 0 e 1", () => {
@@ -54,6 +70,13 @@ describe("uploadReducer", () => {
 
   it("reset volta para idle a partir de qualquer estado", () => {
     expect(uploadReducer({ status: "error", message: "x" }, { type: "RESET" })).toEqual(INITIAL_UPLOAD_STATE);
+  });
+
+  it("ignora uma ação desconhecida e mantém o estado atual (switch exaustivo, guarda defensiva)", () => {
+    const state: UploadState = { status: "uploading", videoId: "v1", uploadUrl: "u", progress: 0.4 };
+    // Simula uma action fora da union fechada (ex.: payload corrompido vindo de um reducer externo).
+    const unknownAction = { type: "UNKNOWN" } as unknown as UploadAction;
+    expect(uploadReducer(state, unknownAction)).toBe(state);
   });
 
   it("ignora URL_READY fora de requesting-url", () => {
