@@ -44,6 +44,22 @@ describe("useRestTimerStore", () => {
     expect(getRemainingSeconds(useRestTimerStore.getState())).toBe(0);
   });
 
+  it("adjust sem timer ativo é um no-op", () => {
+    useRestTimerStore.getState().adjust(30);
+    expect(useRestTimerStore.getState().endsAt).toBeNull();
+    expect(getRemainingSeconds(useRestTimerStore.getState())).toBe(0);
+  });
+
+  it("adjust positivo antes de zerar reseta o háptico: dispara de novo no novo fim", () => {
+    useRestTimerStore.getState().start(2);
+    jest.advanceTimersByTime(3000);
+    expect(haptics.pr).toHaveBeenCalledTimes(1);
+
+    useRestTimerStore.getState().adjust(3);
+    jest.advanceTimersByTime(3000);
+    expect(haptics.pr).toHaveBeenCalledTimes(2);
+  });
+
   it("stop zera o estado", () => {
     useRestTimerStore.getState().start(30);
     useRestTimerStore.getState().stop();

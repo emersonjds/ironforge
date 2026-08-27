@@ -152,5 +152,51 @@ describe("resolveNextSession", () => {
       const result = resolveNextSession(plan, { planDayId: "d1" });
       expect(result.slotLabel).toBe("Pull A");
     });
+
+    describe("com targetDaysOfWeek (relógio congelado numa quarta-feira)", () => {
+      // 2026-01-07 é uma quarta-feira (dow 3), 15h para evitar borda de fuso.
+      const WEDNESDAY = new Date(2026, 0, 7, 15, 0, 0);
+
+      beforeEach(() => {
+        jest.useFakeTimers();
+        jest.setSystemTime(WEDNESDAY);
+      });
+
+      afterEach(() => {
+        jest.useRealTimers();
+      });
+
+      it("dia alvo é hoje → estimatedDate é hoje e isToday true", () => {
+        const day = makeDay({ id: "d1", slotIndex: 0, slotLabel: "A", targetDaysOfWeek: [3] });
+        const plan = makePlan([day]);
+        const result = resolveNextSession(plan, null);
+        expect(result.isToday).toBe(true);
+        expect(result.estimatedDate.getDate()).toBe(7);
+      });
+
+      it("dia alvo ainda está por vir nesta semana → soma os dias corretos", () => {
+        const day = makeDay({ id: "d1", slotIndex: 0, slotLabel: "A", targetDaysOfWeek: [5] });
+        const plan = makePlan([day]);
+        const result = resolveNextSession(plan, null);
+        expect(result.isToday).toBe(false);
+        expect(result.estimatedDate.getDate()).toBe(9);
+      });
+
+      it("nenhum dia alvo restante nesta semana → dá a volta para o próximo (menor dia da lista)", () => {
+        const day = makeDay({ id: "d1", slotIndex: 0, slotLabel: "A", targetDaysOfWeek: [1] });
+        const plan = makePlan([day]);
+        const result = resolveNextSession(plan, null);
+        expect(result.isToday).toBe(false);
+        // Próxima segunda-feira: 7 (qua) + 5 = 12
+        expect(result.estimatedDate.getDate()).toBe(12);
+      });
+
+      it("lista de dias alvo fora de ordem → escolhe o menor dia >= hoje", () => {
+        const day = makeDay({ id: "d1", slotIndex: 0, slotLabel: "A", targetDaysOfWeek: [5, 3, 1] });
+        const plan = makePlan([day]);
+        const result = resolveNextSession(plan, null);
+        expect(result.isToday).toBe(true);
+      });
+    });
   });
 });
