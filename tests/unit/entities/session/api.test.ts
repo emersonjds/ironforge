@@ -9,6 +9,7 @@ import {
   updateSetRequest,
   deleteSetRequest,
   fetchResumableSession,
+  fetchSessions,
 } from "@entities/session/api";
 import type { ApiSetLog } from "@entities/session/api";
 import type { SetLog } from "@entities/session";
@@ -212,5 +213,42 @@ describe("fetchResumableSession", () => {
     expect(result?.sets).toHaveLength(1);
     const [detailUrl] = (global.fetch as jest.Mock).mock.calls[1] as [string];
     expect(detailUrl).toContain(`/sessions/${API_SESSION.id}`);
+  });
+});
+
+describe("fetchSessions", () => {
+  it("busca /sessions com limit e offset e mapeia para o domínio local", async () => {
+    mockFetchOk({ items: [API_SESSION], total: 5, limit: 2, offset: 2 });
+
+    const page = await fetchSessions({ limit: 2, offset: 2 });
+
+    expect(page.items).toHaveLength(1);
+    expect(page.items[0]!.id).toBe(API_SESSION.id);
+    expect(page.total).toBe(5);
+    expect(page.limit).toBe(2);
+    expect(page.offset).toBe(2);
+    const [url] = (global.fetch as jest.Mock).mock.calls[0] as [string];
+    expect(url).toContain("limit=2");
+    expect(url).toContain("offset=2");
+  });
+
+  it("aceita from/to para filtrar por período", async () => {
+    mockFetchOk({ items: [], total: 0, limit: 200, offset: 0 });
+
+    await fetchSessions({ from: "2026-01-01T00:00:00.000Z", to: "2026-08-27T00:00:00.000Z", limit: 200 });
+
+    const [url] = (global.fetch as jest.Mock).mock.calls[0] as [string];
+    expect(url).toContain("from=2026-01-01T00%3A00%3A00.000Z");
+    expect(url).toContain("to=2026-08-27T00%3A00%3A00.000Z");
+  });
+
+  it("sem parâmetros: usa limit/offset padrão", async () => {
+    mockFetchOk({ items: [], total: 0, limit: 20, offset: 0 });
+
+    await fetchSessions();
+
+    const [url] = (global.fetch as jest.Mock).mock.calls[0] as [string];
+    expect(url).toContain("limit=20");
+    expect(url).toContain("offset=0");
   });
 });
