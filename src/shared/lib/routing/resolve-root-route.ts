@@ -4,7 +4,13 @@ interface ResolveRootRouteInput {
   role: "athlete" | "coach" | null;
 }
 
-export function resolveRootRoute(input: ResolveRootRouteInput): string {
+export type RootRoute =
+  | "/(auth)/welcome"
+  | "/coach-guidance"
+  | "/(onboarding)/goal"
+  | "/(app)";
+
+export function resolveRootRoute(input: ResolveRootRouteInput): RootRoute {
   if (!input.isAuthenticated) return "/(auth)/welcome";
   if (input.role === "coach") return "/coach-guidance";
   if (!input.hasCompletedOnboarding) return "/(onboarding)/goal";
