@@ -1,14 +1,15 @@
-import { useActiveSessionStore } from "@features/workout/store";
+import { useActiveSessionStore, reconcileActiveSession } from "@features/workout/store";
 import {
   startSessionRequest,
   finishSessionRequest,
   logSetRequest,
   updateSetRequest,
   deleteSetRequest,
+  fetchResumableSession,
   type ApiSession,
   type ApiSetLog,
 } from "@entities/session";
-import type { PlanDay } from "@entities/plan";
+import type { PlanDay, AssignedPlan } from "@entities/plan";
 
 jest.mock("@react-native-async-storage/async-storage", () =>
   require("@react-native-async-storage/async-storage/jest/async-storage-mock"),
@@ -21,6 +22,7 @@ jest.mock("@entities/session", () => ({
   logSetRequest: jest.fn(),
   updateSetRequest: jest.fn(),
   deleteSetRequest: jest.fn(),
+  fetchResumableSession: jest.fn(),
 }));
 
 const startSessionMock = startSessionRequest as jest.MockedFunction<typeof startSessionRequest>;
@@ -28,6 +30,7 @@ const finishSessionMock = finishSessionRequest as jest.MockedFunction<typeof fin
 const logSetMock = logSetRequest as jest.MockedFunction<typeof logSetRequest>;
 const updateSetMock = updateSetRequest as jest.MockedFunction<typeof updateSetRequest>;
 const deleteSetMock = deleteSetRequest as jest.MockedFunction<typeof deleteSetRequest>;
+const fetchResumableMock = fetchResumableSession as jest.MockedFunction<typeof fetchResumableSession>;
 
 const PLAN_DAY: PlanDay = {
   id: "day-1",
@@ -102,6 +105,7 @@ describe("useActiveSessionStore — sincronização com a api", () => {
     logSetMock.mockReset();
     updateSetMock.mockReset();
     deleteSetMock.mockReset();
+    fetchResumableMock.mockReset();
     useActiveSessionStore.setState({
       session: null,
       planDay: null,
@@ -303,6 +307,76 @@ describe("useActiveSessionStore — sincronização com a api", () => {
       useActiveSessionStore.getState().adoptResumableSession(detail, PLAN_DAY);
 
       expect(useActiveSessionStore.getState().session!.id).toBe(localId);
+    });
+  });
+
+  describe("reconcileActiveSession", () => {
+    const ASSIGNMENTS: AssignedPlan[] = [
+      {
+        id: "assigned-1",
+        athleteId: "athlete-1",
+        coachId: "coach-1",
+        templateId: null,
+        name: "Plano ativo",
+        weeks: 8,
+        startDate: "2026-08-01",
+        status: "active",
+        days: [PLAN_DAY],
+        weekConfigs: [],
+        weekVisibility: "current_and_next",
+        coachNotes: null,
+        version: 1,
+        deletedAt: null,
+        createdAt: "2026-08-01T00:00:00.000Z",
+        syncedAt: null,
+      },
+    ];
+
+    it("sem sessão resumível no servidor: não faz nada", async () => {
+      fetchResumableMock.mockResolvedValue(null);
+
+      await reconcileActiveSession(ASSIGNMENTS);
+
+      expect(useActiveSessionStore.getState().session).toBeNull();
+    });
+
+    it("sessão aberta no servidor: retoma com o plano correspondente", async () => {
+      fetchResumableMock.mockResolvedValue({ ...apiSessionFor(PLAN_DAY), sets: [apiSetFor()] });
+
+      await reconcileActiveSession(ASSIGNMENTS);
+
+      const session = useActiveSessionStore.getState().session!;
+      expect(session.id).toBe("server-session-1");
+      expect(session.sets).toHaveLength(1);
+      expect(useActiveSessionStore.getState().planDay?.id).toBe(PLAN_DAY.id);
+    });
+
+    it("sessão aberta mas sem o dia do plano nos assignments: não retoma", async () => {
+      fetchResumableMock.mockResolvedValue({
+        ...apiSessionFor(PLAN_DAY, "server-session-orphan"),
+        planDayId: "day-inexistente",
+        sets: [],
+      });
+
+      await reconcileActiveSession(ASSIGNMENTS);
+
+      expect(useActiveSessionStore.getState().session).toBeNull();
+    });
+
+    it("já há sessão local ativa: não consulta a api", async () => {
+      startSessionMock.mockReturnValue(new Promise(() => {}));
+      useActiveSessionStore.getState().startSession(PLAN_DAY, "athlete-1");
+
+      await reconcileActiveSession(ASSIGNMENTS);
+
+      expect(fetchResumableMock).not.toHaveBeenCalled();
+    });
+
+    it("erro de rede: não derruba o boot, apenas segue sem sessão resumida", async () => {
+      fetchResumableMock.mockRejectedValue(new Error("network down"));
+
+      await expect(reconcileActiveSession(ASSIGNMENTS)).resolves.toBeUndefined();
+      expect(useActiveSessionStore.getState().session).toBeNull();
     });
   });
 });

@@ -10,11 +10,13 @@ import {
   logSetRequest,
   updateSetRequest,
   deleteSetRequest,
+  fetchResumableSession,
   mapApiSessionToLocal,
   mapApiSetToLocal,
   type ApiSessionDetail,
 } from "@entities/session";
 import { PlanDaySchema } from "@entities/plan";
+import type { AssignedPlan } from "@entities/plan";
 import { withoutDeleted, useLoadHistoryStore } from "@entities/load-history";
 import type { PlanDay, Session, SetLog } from "@/types/domain";
 
@@ -343,3 +345,23 @@ export const useActiveSessionStore = create<ActiveSessionState>()(
     },
   ),
 );
+
+/**
+ * Roda no boot (ou quando os planos do aluno carregam): se o servidor tem
+ * uma sessão aberta e não há nenhuma sessão ativa localmente, retoma-a.
+ * Sem sessão resumível ou sem o plano correspondente, é um no-op silencioso —
+ * o aluno segue o fluxo normal de "iniciar treino".
+ */
+export async function reconcileActiveSession(assignments: AssignedPlan[]): Promise<void> {
+  if (useActiveSessionStore.getState().session) return;
+
+  try {
+    const detail = await fetchResumableSession();
+    if (!detail) return;
+    const planDay = assignments.flatMap((a) => a.days).find((d) => d.id === detail.planDayId);
+    if (!planDay) return;
+    useActiveSessionStore.getState().adoptResumableSession(detail, planDay);
+  } catch {
+    // Sem sessão resumível agora; o aluno segue o fluxo normal de início.
+  }
+}
