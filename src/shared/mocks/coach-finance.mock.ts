@@ -104,6 +104,9 @@ export const mockAnticipationOffer: AnticipationOffer = {
 export function formatBRL(cents: number): string {
   const fixed = (cents / 100).toFixed(2).replace(".", ",");
   const [intPart, dec] = fixed.split(",");
+  // toFixed(2) sempre produz uma parte inteira antes da vírgula; o fallback é
+  // defensivo e não é alcançável para nenhum number válido.
+  /* istanbul ignore next */
   const grouped = (intPart ?? "0").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   return `R$ ${grouped},${dec}`;
 }
