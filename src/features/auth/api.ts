@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { apiRequest } from "@shared/lib/api/client";
 
-const AuthUserSchema = z.object({
+export const AuthUserSchema = z.object({
   id: z.string(),
   email: z.string().email(),
   displayName: z.string(),
