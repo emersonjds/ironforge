@@ -31,6 +31,20 @@ describe("sortDemos", () => {
     expect(sorted.map((d) => d.videoId)).toEqual(["primary", "secondary"]);
   });
 
+  it("coloca demonstrações do personal antes mesmo quando o catálogo vem primeiro no array de entrada", () => {
+    const own = demo({ videoId: "own-coach", ownedByCoach: true });
+    const catalog = demo({ videoId: "catalog", ownedByCoach: false });
+    const sorted = sortDemos([own, catalog]);
+    expect(sorted.map((d) => d.videoId)).toEqual(["own-coach", "catalog"]);
+  });
+
+  it("dentro do mesmo personal, coloca a primária primeiro mesmo quando ela já vem primeiro no array de entrada", () => {
+    const primary = demo({ videoId: "primary", ownedByCoach: true, isPrimary: true });
+    const secondary = demo({ videoId: "secondary", ownedByCoach: true, isPrimary: false });
+    const sorted = sortDemos([primary, secondary]);
+    expect(sorted.map((d) => d.videoId)).toEqual(["primary", "secondary"]);
+  });
+
   it("preserva a ordem relativa do catálogo (sort estável)", () => {
     const catalogA = demo({ videoId: "catalog-a" });
     const catalogB = demo({ videoId: "catalog-b" });
