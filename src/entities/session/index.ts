@@ -24,6 +24,7 @@ export type {
   SessionsPage,
 } from "./api";
 export { useSessionsInfinite } from "./hooks/use-sessions-infinite";
+export { useSessionsCount } from "./hooks/use-sessions-count";
 export { useConsistencySessions } from "./hooks/use-consistency-sessions";
 export { weeksRangeEndingNow } from "./lib/weeks-range";
 export type { WeeksRange } from "./lib/weeks-range";

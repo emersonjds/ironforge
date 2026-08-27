@@ -5,14 +5,8 @@ import { cssInterop } from "nativewind";
 import { router } from "expo-router";
 import { Screen, VStack, HStack, Text, Button, Card, AppHeader, EmptyState } from "@ui/index";
 import { colors } from "@theme/colors";
-import {
-  mockUser,
-  mockHydration,
-  mockSupplements,
-  mockUpcomingSessions,
-  mockReminder,
-  type Supplement,
-} from "@shared/mocks";
+// Hidratação, suplementação e lembrete ainda não têm endpoint — seguem mock só pra essas seções.
+import { mockHydration, mockSupplements, mockReminder, type Supplement } from "@shared/mocks";
 // Frequência semanal ainda não tem endpoint — SEED_PLAN segue mock só para essa seção.
 import { SEED_PLAN } from "@features/plans/data/seed-plan";
 import { useAuthStore } from "@features/auth/store";
@@ -20,10 +14,17 @@ import { useSessionHistory } from "@features/workout/hooks/use-session-history";
 import { useLastFinishedSession } from "@features/workout/hooks/use-last-finished-session";
 import { DaySessionSheet } from "@features/workout/components/day-session-sheet";
 import type { StoredSession } from "@features/workout/hooks/use-last-finished-session";
-import { useAssignments, pickActiveAssignment, resolveNextSession } from "@entities/plan";
+import {
+  useAssignments,
+  pickActiveAssignment,
+  resolveNextSession,
+  type AssignedPlan,
+  type PlanDay,
+} from "@entities/plan";
 import { useExercises } from "@entities/exercise";
 import { muscleLabel } from "@entities/exercise/lib/muscle-labels";
 import { reconcileActiveSession } from "@features/workout/store";
+import type { Exercise } from "@/types/domain";
 
 cssInterop(ScrollView, { className: "style" });
 cssInterop(View, { className: "style" });
@@ -32,6 +33,26 @@ cssInterop(Pressable, { className: "style" });
 const HERO_IMAGE =
   "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=900&q=70&fit=crop";
 const DAY_SHORT = ["SEG", "TER", "QUA", "QUI", "SEX", "SAB", "DOM"];
+
+function summarizeMuscles(day: PlanDay, byId: Map<string, Exercise>): string {
+  const seen = new Set<string>();
+  const labels: string[] = [];
+  for (const pe of day.exercises) {
+    const ex = byId.get(pe.exerciseId);
+    if (ex && !seen.has(ex.primaryMuscle)) {
+      seen.add(ex.primaryMuscle);
+      labels.push(muscleLabel(ex.primaryMuscle));
+      if (labels.length >= 3) break;
+    }
+  }
+  return labels.join(" · ");
+}
+
+function dayAbbrev(day: PlanDay): string {
+  const dow = day.targetDaysOfWeek[0];
+  if (dow === undefined) return day.slotLabel;
+  return DAY_SHORT[(dow + 6) % 7] ?? day.slotLabel;
+}
 
 function getGreeting(): string {
   const h = new Date().getHours();
@@ -67,7 +88,7 @@ export default function DashboardScreen() {
   return (
     <Screen edges={["top"]} padded={false}>
       <AppHeader
-        avatarUrl={mockUser.avatarUrl}
+        avatarUrl={authUser?.avatarUrl ?? null}
         showBell={false}
         onPressAvatar={() => router.push("/(app)/profile")}
       />
@@ -139,21 +160,10 @@ function TodayHeroCard() {
     [plan, lastSession],
   );
 
-  // Deduplicated primary muscles from this day's exercises
-  const musclesSummary = useMemo(() => {
-    if (!resolved) return "";
-    const seen = new Set<string>();
-    const labels: string[] = [];
-    for (const pe of resolved.planDay.exercises) {
-      const ex = byId.get(pe.exerciseId);
-      if (ex && !seen.has(ex.primaryMuscle)) {
-        seen.add(ex.primaryMuscle);
-        labels.push(muscleLabel(ex.primaryMuscle));
-        if (labels.length >= 3) break;
-      }
-    }
-    return labels.join(" · ");
-  }, [resolved, byId]);
+  const musclesSummary = useMemo(
+    () => (resolved ? summarizeMuscles(resolved.planDay, byId) : ""),
+    [resolved, byId],
+  );
 
   const estimatedMin = useMemo(() => {
     if (!resolved) return 0;
@@ -368,7 +378,30 @@ function WeekStrip({
   );
 }
 
+function upcomingDays(plan: AssignedPlan, resolved: ReturnType<typeof resolveNextSession>): PlanDay[] {
+  const days = [...plan.days].sort((a, b) => a.slotIndex - b.slotIndex);
+  return days.filter((d) => d.id !== resolved.planDay.id).slice(0, 3);
+}
+
 function UpcomingSessions() {
+  const assignments = useAssignments();
+  const exercises = useExercises();
+  const lastSession = useLastFinishedSession();
+
+  const plan = pickActiveAssignment(assignments.data ?? []);
+  const byId = useMemo(
+    () => new Map((exercises.data ?? []).map((exercise) => [exercise.id, exercise])),
+    [exercises.data],
+  );
+
+  const days = useMemo(() => {
+    if (!plan || !plan.days.length) return [];
+    const resolved = resolveNextSession(plan, lastSession ? { planDayId: lastSession.planDayId } : null);
+    return upcomingDays(plan, resolved);
+  }, [plan, lastSession]);
+
+  if (assignments.isLoading || exercises.isLoading || days.length === 0) return null;
+
   return (
     <VStack space={3}>
       <HStack justify="between" align="center">
@@ -378,26 +411,29 @@ function UpcomingSessions() {
         </Pressable>
       </HStack>
       <Card variant="raised" padding="none">
-        {mockUpcomingSessions.map((s, i) => (
-          <View
-            key={s.id}
-            className={`flex-row items-center gap-3 px-4 py-3 ${
+        {days.map((day, i) => (
+          <Pressable
+            key={day.id}
+            onPress={() => router.push({ pathname: "/(workout)/preview", params: { dayId: day.id } })}
+            accessibilityRole="button"
+            accessibilityLabel={`Ver treino ${day.name}`}
+            className={`flex-row items-center gap-3 px-4 py-3 active:opacity-70 ${
               i > 0 ? "border-t border-border-subtle" : ""
             }`}
           >
             <View className="h-11 w-11 rounded-xl bg-forest-500 items-center justify-center">
               <Text className="text-[11px] font-black tracking-widest text-white leading-none">
-                {s.dayAbbrev}
+                {dayAbbrev(day)}
               </Text>
             </View>
             <VStack space={1} className="flex-1">
-              <Text className="text-sm font-semibold text-text-primary">{s.name}</Text>
+              <Text className="text-sm font-semibold text-text-primary">{day.name}</Text>
               <Text className="text-xs text-text-tertiary" numberOfLines={1}>
-                {s.description}
+                {summarizeMuscles(day, byId)}
               </Text>
             </VStack>
             <Ionicons name="chevron-forward" size={18} color={colors.text.tertiary} />
-          </View>
+          </Pressable>
         ))}
       </Card>
     </VStack>

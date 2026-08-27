@@ -15,3 +15,9 @@ export function formatDuration(seconds: number): string {
 export function formatSetLine(weight: number, reps: number, unit: "kg" | "lb" = "kg"): string {
   return `${formatWeight(weight, unit)} × ${reps}`;
 }
+
+export function formatCurrencyBRL(cents: number): string {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" })
+    .format(cents / 100)
+    .replace(/ /g, " ");
+}

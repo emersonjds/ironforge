@@ -13,3 +13,5 @@ export { fetchLoadHistorySummary, fetchPersonalRecords } from "./api";
 export type { WeekSummary, PersonalRecordEntry } from "./api";
 export { useLoadHistorySummary } from "./hooks/use-load-history-summary";
 export { usePersonalRecords } from "./hooks/use-personal-records";
+export { activeWeeksCount, averageWeeklyVolume } from "./lib/summary-stats";
+export { pickHeaviestRecord } from "./lib/pick-heaviest-record";
