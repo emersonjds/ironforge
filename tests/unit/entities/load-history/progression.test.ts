@@ -69,4 +69,29 @@ describe("suggestNextSet", () => {
     const result = suggestNextSet({ ...baseOpts, lastSets });
     expect(result.reason).toBe("hold");
   });
+
+  it("trata RIR nulo como 0 no set mais recente: não atinge o alvo, sugere hold", () => {
+    const lastSets = [{ weight: 100, reps: 10, rir: null }];
+    const result = suggestNextSet({ ...baseOpts, lastSets });
+    expect(result.reason).toBe("hold");
+  });
+
+  it("trata RIR nulo como 0 ao checar se todos os sets bateram o topo da faixa: não aumenta peso", () => {
+    const lastSets = [
+      { weight: 100, reps: 12, rir: null },
+      { weight: 100, reps: 12, rir: null },
+    ];
+    const result = suggestNextSet({ ...baseOpts, lastSets });
+    expect(result.reason).not.toBe("increase_weight");
+  });
+
+  it("ignora sets com reps 0 (série não realizada) ao montar o histórico de trabalho", () => {
+    const lastSets = [
+      { weight: 100, reps: 10, rir: 2 },
+      { weight: 0, reps: 0, rir: null },
+    ];
+    const result = suggestNextSet({ ...baseOpts, lastSets });
+    expect(result.reason).toBe("increase_reps");
+    expect(result.weight).toBe(100);
+  });
 });
