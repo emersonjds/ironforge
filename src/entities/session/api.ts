@@ -208,6 +208,37 @@ export async function deleteSetRequest(setId: string): Promise<void> {
   await apiRequest<void>(`/sets/${setId}`, { method: "DELETE" });
 }
 
+export interface FetchSessionsParams {
+  limit?: number;
+  offset?: number;
+  from?: string;
+  to?: string;
+}
+
+export interface SessionsPage {
+  items: Session[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export async function fetchSessions(params: FetchSessionsParams = {}): Promise<SessionsPage> {
+  const search = new URLSearchParams();
+  search.set("limit", String(params.limit ?? 20));
+  search.set("offset", String(params.offset ?? 0));
+  if (params.from) search.set("from", params.from);
+  if (params.to) search.set("to", params.to);
+
+  const raw = await apiRequest<unknown>(`/sessions?${search.toString()}`);
+  const parsed = ApiSessionListSchema.parse(raw);
+  return {
+    items: parsed.items.map(mapApiSessionToLocal),
+    total: parsed.total,
+    limit: parsed.limit,
+    offset: parsed.offset,
+  };
+}
+
 /**
  * Busca a sessão mais recente do aluno autenticado; se ainda estiver aberta
  * (endedAt nulo), retorna com os sets para o app retomá-la. GET /sessions já

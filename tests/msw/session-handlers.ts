@@ -133,8 +133,9 @@ export const sessionHandlers = [
   http.get(`${API_BASE_URL}/sessions`, ({ request }) => {
     const url = new URL(request.url);
     const limit = Number(url.searchParams.get("limit") ?? "50");
-    const items = sessions.slice(0, limit);
-    return HttpResponse.json({ items, total: sessions.length, limit, offset: 0 });
+    const offset = Number(url.searchParams.get("offset") ?? "0");
+    const items = sessions.slice(offset, offset + limit);
+    return HttpResponse.json({ items, total: sessions.length, limit, offset });
   }),
 
   http.get(`${API_BASE_URL}/sessions/:id`, ({ params }) => {

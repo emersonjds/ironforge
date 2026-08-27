@@ -6,7 +6,7 @@ import { Screen, VStack, HStack, Text, Card, AppHeader, EmptyState } from "@ui/i
 import { colors } from "@theme/colors";
 import { useAssignments, pickActiveAssignment } from "@entities/plan";
 import { useExercises } from "@entities/exercise";
-import { mockUser } from "@shared/mocks";
+import { useAuthStore } from "@features/auth/store";
 import type { Exercise, Muscle, PlanDay } from "@/types/domain";
 
 cssInterop(ScrollView, { className: "style" });
@@ -42,6 +42,7 @@ function muscleSummary(day: PlanDay, byId: Map<string, Exercise>): string {
 export default function WorkoutsScreen() {
   const assignments = useAssignments();
   const exercises = useExercises();
+  const authUser = useAuthStore((s) => s.user);
 
   const plan = pickActiveAssignment(assignments.data ?? []);
   const byId = new Map((exercises.data ?? []).map((exercise) => [exercise.id, exercise]));
@@ -50,7 +51,7 @@ export default function WorkoutsScreen() {
   return (
     <Screen edges={["top"]} padded={false}>
       <AppHeader
-        avatarUrl={mockUser.avatarUrl}
+        avatarUrl={authUser?.avatarUrl ?? null}
         showBell={false}
         onPressAvatar={() => router.push("/(app)/profile")}
       />
