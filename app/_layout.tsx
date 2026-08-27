@@ -34,7 +34,7 @@ export default function RootLayout() {
             <Stack.Screen name="(auth)" />
             <Stack.Screen name="(onboarding)" />
             <Stack.Screen name="(app)" />
-            <Stack.Screen name="(coach)" />
+            <Stack.Screen name="coach-guidance" />
             <Stack.Screen
               name="(workout)"
               options={{ presentation: "fullScreenModal", gestureEnabled: false }}
