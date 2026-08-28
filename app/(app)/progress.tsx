@@ -14,6 +14,7 @@ import {
 import { useConsistencySessions, buildConsistencyGrid } from "@entities/session";
 import { useLoadHistorySummary, usePersonalRecords, type WeekSummary } from "@entities/load-history";
 import { useExercises } from "@entities/exercise";
+import { ProgressPhotosCard } from "@features/progress";
 
 cssInterop(ScrollView, { className: "style" });
 cssInterop(View, { className: "style" });
@@ -38,6 +39,7 @@ export default function ProgressScreen() {
             <Text variant="title">Progresso</Text>
 
             <BodyWeightCard />
+            <ProgressPhotosCard />
             <ConsistencyCard />
             <WeeklyVolumeCard />
             <PersonalRecordsCard />

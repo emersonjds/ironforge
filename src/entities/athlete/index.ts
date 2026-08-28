@@ -7,3 +7,10 @@ export { useMeasurementPhotos } from "./hooks/use-measurement-photos";
 export { useCoachPayment } from "./hooks/use-coach-payment";
 export { toBodyWeightSeries } from "./lib/body-weight-series";
 export type { BodyWeightPoint } from "./lib/body-weight-series";
+export {
+  comparisonPair,
+  photoForAngle,
+  hasAnyPhoto,
+  ANGLE_LABEL,
+  PHOTO_ANGLES,
+} from "./lib/photo-comparison";
