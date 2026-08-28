@@ -50,3 +50,28 @@ export async function fetchCoachPayment(): Promise<CoachPayment | null> {
     throw err;
   }
 }
+
+const PhotoAngleSchema = z.enum(["front", "back", "side"]);
+export type PhotoAngle = z.infer<typeof PhotoAngleSchema>;
+
+/**
+ * `url` é assinada pelo servidor e vale 5 minutos. Foto de corpo é dado de
+ * saúde: não guarde a URL, não persista, não mande para log. Peça de novo na
+ * hora de exibir.
+ */
+const ProgressPhotoSchema = z.object({
+  id: z.string(),
+  athleteId: z.string(),
+  measurementId: z.string().nullable(),
+  angle: PhotoAngleSchema,
+  status: z.enum(["pending", "ready"]),
+  takenAt: z.string(),
+  url: z.string().nullable(),
+  createdAt: z.string(),
+});
+export type ProgressPhoto = z.infer<typeof ProgressPhotoSchema>;
+
+export async function fetchMeasurementPhotos(measurementId: string): Promise<ProgressPhoto[]> {
+  const raw = await apiRequest<unknown>(`/measurements/${measurementId}/photos`);
+  return z.array(ProgressPhotoSchema).parse(raw);
+}
