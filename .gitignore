@@ -45,14 +45,6 @@ yarn-error.*
 /ios
 /android
 
-# Lagune
-/.lagune/templates/
-/.lagune/hooks/
-/.lagune/proofs/
-/.lagune/specializations.md
-/.lagune/skills/*
-/**/lagune.*
-/**/lagune/
 
 # Regras de agente de IDE que não usamos (Cline, Cursor, Windsurf, OpenCode).
 # Geradas por ferramenta de estilo de resposta, não fazem parte do projeto.
@@ -60,3 +52,7 @@ yarn-error.*
 .cursor/
 .windsurf/
 .opencode/
+
+# Estado de ferramenta, não código do projeto
+.lagune/
+.github/copilot-instructions.md
