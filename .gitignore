@@ -43,3 +43,10 @@ yarn-error.*
 
 
 
+
+# Regras de agente de IDE que não usamos (Cline, Cursor, Windsurf, OpenCode).
+# Geradas por ferramenta de estilo de resposta, não fazem parte do projeto.
+.clinerules/
+.cursor/
+.windsurf/
+.opencode/
