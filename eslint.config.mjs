@@ -11,6 +11,8 @@ export default [
       "dist/**",
       "build/**",
       "babel.config.js",
+      ".lagune/**",
+      ".claude/**",
     ],
   },
   {

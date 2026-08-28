@@ -22,6 +22,15 @@ describe("e1rm", () => {
   });
 
   describe("brzycki1RM", () => {
+    it("retorna 0 para peso <= 0", () => {
+      expect(brzycki1RM(0, 5)).toBe(0);
+      expect(brzycki1RM(-10, 5)).toBe(0);
+    });
+
+    it("retorna 0 para reps <= 0", () => {
+      expect(brzycki1RM(100, 0)).toBe(0);
+    });
+
     it("retorna o peso quando reps = 1", () => {
       expect(brzycki1RM(100, 1)).toBe(100);
     });

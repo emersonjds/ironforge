@@ -33,6 +33,9 @@ export function resolveNextSession(
     }
   }
 
+  // nextIndex vem de um módulo por days.length, então é sempre um índice válido;
+  // o fallback é defensivo e não é alcançável por nenhuma entrada válida.
+  /* istanbul ignore next */
   const planDay = days[nextIndex] ?? days[0]!;
   const estimatedDate = estimateDate(planDay.targetDaysOfWeek);
   const today = new Date();

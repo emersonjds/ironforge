@@ -1,0 +1,83 @@
+{
+  "name": "lagune",
+  "entries": [
+    {
+      "name": "Session tokens and profile data persisted unencrypted",
+      "paths": [
+        "src/features/auth/store.ts",
+        "src/features/auth/api.ts"
+      ]
+    },
+    {
+      "name": "Health and training data cached unencrypted and not purged on logout",
+      "paths": [
+        "src/entities/load-history/store.ts",
+        "src/features/workout/store.ts",
+        "src/features/workout/hooks/use-session-history.ts",
+        "src/features/workout/hooks/use-last-finished-session.ts"
+      ]
+    },
+    {
+      "name": "Dev-account demo password is gated in the UI only, not in the data it ships",
+      "paths": [
+        "src/features/auth/dev-accounts.ts",
+        "src/features/auth/components/dev-login-picker.tsx"
+      ]
+    },
+    {
+      "name": ".env is not fully excluded from version control",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "name": "Production API base URL has no enforced or validated source",
+      "paths": [
+        "src/shared/lib/api/resolve-base-url.ts",
+        "src/shared/lib/api/client.ts"
+      ]
+    },
+    {
+      "name": "Externally sourced URLs opened without a host allowlist",
+      "paths": [
+        "src/entities/video/ui/demo-player.tsx",
+        "app/coach-guidance.tsx",
+        "src/shared/config/web-panel.ts"
+      ]
+    },
+    {
+      "name": "Invite deep link accepts a client-only token with no backend round trip",
+      "paths": [
+        "app/(auth)/invite.tsx",
+        "src/entities/invite/lib/decode-token.ts"
+      ]
+    },
+    {
+      "name": "No code signing configured for OTA updates",
+      "paths": [
+        "app.json"
+      ]
+    },
+    {
+      "name": "Camera/photo-library permissions requested for a feature not yet implemented",
+      "paths": [
+        "app.json"
+      ]
+    },
+    {
+      "name": "The externalized dev-account password is still a plaintext literal in the repository",
+      "paths": [
+        "tests/unit/features/auth/no-literal-dev-password.test.ts"
+      ]
+    },
+    {
+      "name": "Authenticated route groups have no client-side session guard, so a deep link reaches them directly",
+      "paths": [
+        "app/index.tsx",
+        "app/(app)/_layout.tsx",
+        "app/(workout)/_layout.tsx",
+        "app/(app)/history.tsx"
+      ]
+    }
+  ]
+}

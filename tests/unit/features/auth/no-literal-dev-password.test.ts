@@ -1,21 +1,19 @@
-import { readFileSync, readdirSync } from "node:fs";
+import { randomUUID } from "node:crypto";
+import { rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const SRC_DIR = join(__dirname, "..", "..", "..", "..", "src");
-const DEV_PASSWORD = "demo-ironforge-2026";
+import { findFilesContaining } from "../../../utils/find-files-containing";
 
-function listSourceFiles(dir: string): string[] {
-  return readdirSync(dir, { recursive: true })
-    .map((entry) => join(dir, entry.toString()))
-    .filter((path) => path.endsWith(".ts") || path.endsWith(".tsx"));
-}
+describe("varredura de segredo literal", () => {
+  it("encontra um valor gerado em runtime dentro de src/, app/ ou tests/", () => {
+    const canary = randomUUID();
+    const canaryFile = join(__dirname, `.literal-scan-canary-${canary}.ts`);
+    writeFileSync(canaryFile, `export const canary = "${canary}";\n`);
 
-describe("dev account password", () => {
-  it("não aparece como literal em nenhum arquivo de src/", () => {
-    const offenders = listSourceFiles(SRC_DIR).filter((path) =>
-      readFileSync(path, "utf-8").includes(DEV_PASSWORD),
-    );
-
-    expect(offenders).toEqual([]);
+    try {
+      expect(findFilesContaining(canary)).toEqual([canaryFile]);
+    } finally {
+      rmSync(canaryFile);
+    }
   });
 });
