@@ -1,6 +1,3 @@
-// Barrel dos mocks de UI (fase sem backend). Cada domínio em seu arquivo.
-export * from "./user.mock";
+// Barrel dos mocks de UI que ainda não têm endpoint na API. Cada domínio em seu arquivo.
 export * from "./dashboard.mock";
-export * from "./profile.mock";
-export * from "./progress.mock";
 export * from "./relation.mock";
