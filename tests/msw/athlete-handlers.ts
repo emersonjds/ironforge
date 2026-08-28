@@ -35,6 +35,7 @@ let coachPayment: CoachPaymentRow | null = null;
 
 export function resetAthleteHandlerState(): void {
   measurements = [];
+  photos = [];
   coachPayment = null;
 }
 
@@ -69,6 +70,35 @@ export function setCoachPayment(payment: CoachPaymentRow | null): void {
   coachPayment = payment;
 }
 
+type PhotoRow = {
+  id: string;
+  athleteId: string;
+  measurementId: string;
+  angle: "front" | "back" | "side";
+  status: "pending" | "ready";
+  takenAt: string;
+  url: string | null;
+  createdAt: string;
+};
+
+let photos: PhotoRow[] = [];
+
+export function seedPhoto(overrides: Partial<PhotoRow> & { measurementId: string }): PhotoRow {
+  const now = new Date().toISOString();
+  const row: PhotoRow = {
+    id: `photo-${photos.length + 1}`,
+    athleteId: "athlete-1",
+    angle: "front",
+    status: "ready",
+    takenAt: now,
+    url: `https://storage.local/signed/photo-${photos.length + 1}.jpg`,
+    createdAt: now,
+    ...overrides,
+  };
+  photos.push(row);
+  return row;
+}
+
 function errorBody(code: string, message: string) {
   return { error: { code, message, details: {} } };
 }
@@ -76,6 +106,18 @@ function errorBody(code: string, message: string) {
 export const athleteHandlers = [
   http.get(`${API_BASE_URL}/athletes/me/measurements`, () => {
     return HttpResponse.json(measurements);
+  }),
+
+  http.get(`${API_BASE_URL}/measurements/:id/photos`, ({ params }) => {
+    const exists = measurements.some((row) => row.id === params.id);
+
+    if (!exists) {
+      return HttpResponse.json(errorBody("MEASUREMENT_NOT_FOUND", "Measurement not found."), {
+        status: 404,
+      });
+    }
+
+    return HttpResponse.json(photos.filter((row) => row.measurementId === params.id));
   }),
 
   http.get(`${API_BASE_URL}/athletes/me/coach-payment`, () => {
